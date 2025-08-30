@@ -121,7 +121,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     setCurrentDraw({
       type: 'evolution',
       balls: evolutionBalls,
-      title: 'Evoluția Ta Acest Sezon',
+      title: 'Your Performance This Season',
       onComplete: (evolution) => {
         const evo = parseInt(evolution);
         continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter);
@@ -156,10 +156,10 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     if (position === 1) {
       trophies.push(`🏆 ${currentPlayer.league}`);
     }
-    if (cupResult.phase === "Câștigător") {
-      trophies.push(`🏆 Cupa Națională`);
+    if (cupResult.phase === "Winner") {
+      trophies.push(`🏆 National Cup`);
     }
-    if (europeanResult?.phase === "Câștigător") {
+    if (europeanResult?.phase === "Winner") {
       trophies.push(`🏆 ${europeanResult.phase}`);
     }
 
@@ -252,15 +252,15 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         <Card className="w-full max-w-2xl bg-white">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold text-gray-800">
-              🏆 Cariera S-a Încheiat
+              🏆 Career Ended
             </CardTitle>
           </CardHeader>
           <CardContent className="text-center space-y-4">
             <p className="text-xl">
-              {currentPlayer.name} s-a retras la vârsta de {currentPlayer.age} ani!
+              {currentPlayer.name} retired at age {currentPlayer.age}!
             </p>
             <Button onClick={() => onRetirement(currentPlayer)} className="bg-blue-600 hover:bg-blue-700">
-              Vezi Rezumatul Carierei
+              View Career Summary
             </Button>
           </CardContent>
         </Card>
@@ -276,28 +276,28 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           <CardHeader>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
-                <CardTitle className="text-2xl font-bold text-green-800">
+                <CardTitle className="text-xl md:text-2xl font-bold text-green-800">
                   ⚽ {currentPlayer.name}
                 </CardTitle>
-                <p className="text-green-600">
-                  {currentPlayer.position} • {currentPlayer.age} ani • Rating: {currentPlayer.rating}
+                <p className="text-green-600 text-sm md:text-base">
+                  {currentPlayer.position} • {currentPlayer.age} years old • Rating: {currentPlayer.rating}
                 </p>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
                 <div>
                   <span className="font-semibold text-green-800">Club:</span>
-                  <p>{currentPlayer.club || 'Liber de contract'}</p>
+                  <p className="break-words">{currentPlayer.club || 'Free agent'}</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-green-800">Liga:</span>
-                  <p>{currentPlayer.league || '-'}</p>
+                  <span className="font-semibold text-green-800">League:</span>
+                  <p className="break-words">{currentPlayer.league || '-'}</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-green-800">Salariu:</span>
-                  <p>{formatCurrency(currentPlayer.salary)}/an</p>
+                  <span className="font-semibold text-green-800">Salary:</span>
+                  <p>{formatCurrency(currentPlayer.salary)}/year</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-green-800">Valoare:</span>
+                  <span className="font-semibold text-green-800">Value:</span>
                   <p>{formatCurrency(currentPlayer.marketValue)}</p>
                 </div>
               </div>
@@ -307,40 +307,40 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
         <Tabs defaultValue="career" className="space-y-4">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="career">Carieră</TabsTrigger>
-            <TabsTrigger value="attributes">Atribute</TabsTrigger>
-            <TabsTrigger value="season">Sezon</TabsTrigger>
-            <TabsTrigger value="actions">Acțiuni</TabsTrigger>
+            <TabsTrigger value="career">Career</TabsTrigger>
+            <TabsTrigger value="attributes">Attributes</TabsTrigger>
+            <TabsTrigger value="season">Season</TabsTrigger>
+            <TabsTrigger value="actions">Actions</TabsTrigger>
           </TabsList>
 
           <TabsContent value="career" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Istoricul Carierei</CardTitle>
+                <CardTitle>Career History</CardTitle>
               </CardHeader>
               <CardContent>
                 {currentPlayer.career.length === 0 ? (
-                  <p className="text-gray-500 text-center">Nu ai încă istoric de carieră.</p>
+                  <p className="text-gray-500 text-center">No career history yet.</p>
                 ) : (
                   <div className="space-y-4">
                     {currentPlayer.career.map((entry, index) => (
                       <div key={index} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h4 className="font-semibold">Sezonul {entry.season}</h4>
+                            <h4 className="font-semibold">Season {entry.season}</h4>
                             <p className="text-sm text-gray-600">{entry.club} ({entry.league})</p>
                           </div>
                           <Badge variant="secondary">Rating: {entry.rating}</Badge>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                          <div>Goluri: {entry.stats.goals}</div>
-                          <div>Assist-uri: {entry.stats.assists}</div>
-                          <div>Salariu: {formatCurrency(entry.salary)}</div>
-                          <div>Valoare: {formatCurrency(entry.marketValue)}</div>
+                          <div>Goals: {entry.stats.goals}</div>
+                          <div>Assists: {entry.stats.assists}</div>
+                          <div>Salary: {formatCurrency(entry.salary)}</div>
+                          <div>Value: {formatCurrency(entry.marketValue)}</div>
                         </div>
                         {entry.trophies.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-sm font-semibold">Trofee: </span>
+                            <span className="text-sm font-semibold">Trophies: </span>
                             {entry.trophies.join(', ')}
                           </div>
                         )}
@@ -355,13 +355,13 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           <TabsContent value="attributes" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Atributele Jucătorului</CardTitle>
+                <CardTitle>Player Attributes</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                   {Object.entries(currentPlayer.attributes).map(([attr, value]) => (
                     <div key={attr} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                      <span className="font-medium">{attr}</span>
+                      <span className="font-medium text-sm md:text-base">{attr}</span>
                       <Badge variant={value >= 80 ? "default" : value >= 70 ? "secondary" : "destructive"}>
                         {value}
                       </Badge>
@@ -376,17 +376,17 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             {seasonResults ? (
               <Card>
                 <CardHeader>
-                  <CardTitle>Rezultatele Sezonului {currentPlayer.season}</CardTitle>
+                  <CardTitle>Season {currentPlayer.season} Results</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
-                    <h4 className="font-semibold mb-2">Liga</h4>
-                    <p>Poziția finală: {seasonResults.league.position}/{seasonResults.league.total}</p>
+                    <h4 className="font-semibold mb-2">League</h4>
+                    <p>Final position: {seasonResults.league.position}/{seasonResults.league.total}</p>
                   </div>
                   <Separator />
                   <div>
-                    <h4 className="font-semibold mb-2">Cupa Națională</h4>
-                    <p>Faza maximă: {seasonResults.cup.phase}</p>
+                    <h4 className="font-semibold mb-2">National Cup</h4>
+                    <p>Best round: {seasonResults.cup.phase}</p>
                     <div className="text-sm text-gray-600 mt-1">
                       {seasonResults.cup.details.map((detail, i) => (
                         <div key={i}>{detail}</div>
@@ -397,9 +397,9 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                     <>
                       <Separator />
                       <div>
-                        <h4 className="font-semibold mb-2">Competiție Europeană</h4>
-                        <p>Faza maximă: {seasonResults.european.phase}</p>
-                        <p>Premiu: {formatCurrency(seasonResults.european.prize)}</p>
+                        <h4 className="font-semibold mb-2">European Competition</h4>
+                        <p>Best round: {seasonResults.european.phase}</p>
+                        <p>Prize money: {formatCurrency(seasonResults.european.prize)}</p>
                         <div className="text-sm text-gray-600 mt-1">
                           {seasonResults.european.details.map((detail, i) => (
                             <div key={i}>{detail}</div>
@@ -410,21 +410,21 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   )}
                   <Separator />
                   <div>
-                    <h4 className="font-semibold mb-2">Statistici Personale</h4>
+                    <h4 className="font-semibold mb-2">Personal Statistics</h4>
                     <div className="grid grid-cols-2 gap-4">
-                      <div>Goluri: {seasonResults.stats.goals}</div>
-                      <div>Assist-uri: {seasonResults.stats.assists}</div>
+                      <div>Goals: {seasonResults.stats.goals}</div>
+                      <div>Assists: {seasonResults.stats.assists}</div>
                       {seasonResults.stats.cleanSheets && (
                         <div>Clean Sheets: {seasonResults.stats.cleanSheets}</div>
                       )}
-                      <div>Evoluție: {seasonResults.evolution}/10</div>
+                      <div>Performance: {seasonResults.evolution}/10</div>
                     </div>
                   </div>
                   {seasonResults.trophies.length > 0 && (
                     <>
                       <Separator />
                       <div>
-                        <h4 className="font-semibold mb-2">Trofee Câștigate</h4>
+                        <h4 className="font-semibold mb-2">Trophies Won</h4>
                         <div>{seasonResults.trophies.join(', ')}</div>
                       </div>
                     </>
@@ -434,7 +434,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             ) : (
               <Card>
                 <CardContent className="text-center py-12">
-                  <p className="text-gray-500">Simulează un sezon nou pentru a vedea rezultatele.</p>
+                  <p className="text-gray-500">Play a new season to see results.</p>
                 </CardContent>
               </Card>
             )}
@@ -443,7 +443,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           <TabsContent value="actions" className="space-y-4">
             <Card>
               <CardHeader>
-                <CardTitle>Acțiuni Disponibile</CardTitle>
+                <CardTitle>Available Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <Button 
@@ -452,26 +452,26 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
                   size="lg"
                 >
-                  {seasonInProgress ? '⏳ Simulare în curs...' : '▶️ Sezon Nou'}
+                  {seasonInProgress ? '⏳ Simulating...' : '▶️ New Season'}
                 </Button>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button variant="outline" disabled>
-                    🔄 Cere Transfer
+                    🔄 Request Transfer
                   </Button>
                   <Button variant="outline" disabled>
-                    📝 Renegociază Contract
+                    📝 Renegotiate Contract
                   </Button>
                   <Button variant="outline" disabled>
-                    🏃 Cere Împrumut
+                    🏃 Request Loan
                   </Button>
                   <Button variant="outline" disabled>
-                    🏠 Transfer Intern
+                    🏠 Domestic Transfer
                   </Button>
                 </div>
                 
                 <p className="text-sm text-gray-500 text-center">
-                  Alte acțiuni vor fi disponibile în versiuni viitoare
+                  Additional actions will be available in future versions
                 </p>
               </CardContent>
             </Card>
