@@ -32,13 +32,13 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
   const countries = Object.keys(LEAGUES);
 
   const steps = [
-    'Nume și Vârstă',
-    'Poziție',
-    'Țara',
-    'Club Favorit',
-    'Rating Inițial',
-    'Vârsta de Retragere',
-    'Confirmare'
+    'Name & Age',
+    'Position',
+    'Country',
+    'Favorite Club',
+    'Initial Rating',
+    'Retirement Age',
+    'Confirmation'
   ];
 
   const handleNextStep = () => {
@@ -54,7 +54,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
     setCurrentDraw({
       type: 'position',
       balls,
-      title: 'Extragerea Poziției Tale'
+      title: 'Draw Your Position'
     });
     setShowDraw(true);
   };
@@ -68,7 +68,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
     setCurrentDraw({
       type: 'country',
       balls,
-      title: 'Extragerea Țării Tale'
+      title: 'Draw Your Country'
     });
     setShowDraw(true);
   };
@@ -90,7 +90,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
     setCurrentDraw({
       type: 'rating',
       balls: ratingBalls,
-      title: 'Extragerea Rating-ului Inițial'
+      title: 'Draw Your Initial Rating'
     });
     setShowDraw(true);
   };
@@ -104,7 +104,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
     setCurrentDraw({
       type: 'retire',
       balls: retireBalls,
-      title: 'Extragerea Vârstei de Retragere'
+      title: 'Draw Your Retirement Age'
     });
     setShowDraw(true);
   };
@@ -153,226 +153,228 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 flex items-center justify-center p-4">
-      <Card className="w-full max-w-2xl bg-white/95 backdrop-blur-sm">
-        <CardHeader className="text-center">
-          <CardTitle className="text-3xl font-bold text-green-800">
-            ⚽ Creează-ți Fotbalistul
-          </CardTitle>
-          <div className="flex justify-center mt-4">
-            <div className="flex space-x-2">
-              {steps.map((_, index) => (
-                <div
-                  key={index}
-                  className={`w-3 h-3 rounded-full ${
-                    index <= step ? 'bg-green-600' : 'bg-gray-300'
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-          <p className="text-green-700 mt-2">
-            Pasul {step + 1} din {steps.length}: {steps[step]}
-          </p>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {step === 0 && (
-            <div className="space-y-4">
-              <div>
-                <Label htmlFor="name" className="text-green-800 font-semibold">
-                  Numele Jucătorului
-                </Label>
-                <Input
-                  id="name"
-                  value={playerName}
-                  onChange={(e) => setPlayerName(e.target.value)}
-                  placeholder="Introduceți numele..."
-                  className="mt-1"
-                />
-              </div>
-              <div>
-                <Label htmlFor="age" className="text-green-800 font-semibold">
-                  Vârsta (16-31)
-                </Label>
-                <Input
-                  id="age"
-                  type="number"
-                  min="16"
-                  max="31"
-                  value={playerAge}
-                  onChange={(e) => setPlayerAge(parseInt(e.target.value) || 18)}
-                  className="mt-1"
-                />
-              </div>
-              <Button 
-                onClick={handleNextStep}
-                disabled={!playerName.trim()}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                Continuă →
-              </Button>
-            </div>
-          )}
-
-          {step === 1 && (
-            <div className="text-center space-y-4">
-              <p className="text-green-800">Hai să vedem ce poziție vei juca!</p>
-              <Button 
-                onClick={handlePositionDraw}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
-                size="lg"
-              >
-                🎰 Extrage Poziția
-              </Button>
-              {selectedPosition && (
-                <div className="mt-4 p-4 bg-green-100 rounded-lg">
-                  <p className="text-green-800 font-bold">
-                    Poziția ta: {selectedPosition}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === 2 && (
-            <div className="text-center space-y-4">
-              <p className="text-green-800">Din ce țară vei fi?</p>
-              <Button 
-                onClick={handleCountryDraw}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
-                size="lg"
-              >
-                🌍 Extrage Țara
-              </Button>
-              {selectedCountry && (
-                <div className="mt-4 p-4 bg-green-100 rounded-lg">
-                  <p className="text-green-800 font-bold">
-                    Țara ta: {selectedCountry}
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-4">
-              <Label className="text-green-800 font-semibold">
-                Alege Clubul Tău Favorit din {selectedCountry}
-              </Label>
-              <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
-                {getAvailableClubs().map((club) => (
-                  <Button
-                    key={club.club}
-                    variant={favoriteClub === club.club ? "default" : "outline"}
-                    onClick={() => setFavoriteClub(club.club)}
-                    className={`text-left justify-start ${
-                      favoriteClub === club.club 
-                        ? 'bg-green-600 text-white' 
-                        : 'hover:bg-green-50'
+      <div className="w-full max-w-2xl">
+        <Card className="bg-white/95 backdrop-blur-sm">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">
+              ⚽ Create Your Footballer
+            </CardTitle>
+            <div className="flex justify-center mt-4">
+              <div className="flex space-x-2">
+                {steps.map((_, index) => (
+                  <div
+                    key={index}
+                    className={`w-3 h-3 rounded-full ${
+                      index <= step ? 'bg-green-600' : 'bg-gray-300'
                     }`}
-                  >
-                    {club.club} (Putere: {club.strength})
-                  </Button>
+                  />
                 ))}
               </div>
-              <Button 
-                onClick={handleNextStep}
-                disabled={!favoriteClub}
-                className="w-full bg-green-600 hover:bg-green-700"
-              >
-                Continuă →
-              </Button>
             </div>
-          )}
+            <p className="text-green-700 mt-2 text-sm md:text-base">
+              Step {step + 1} of {steps.length}: {steps[step]}
+            </p>
+          </CardHeader>
 
-          {step === 4 && (
-            <div className="text-center space-y-4">
-              <p className="text-green-800">Ce rating vei avea la început?</p>
-              <Button 
-                onClick={handleRatingDraw}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
-                size="lg"
-              >
-                ⭐ Extrage Rating-ul
-              </Button>
-              {selectedRating > 0 && (
-                <div className="mt-4 p-4 bg-green-100 rounded-lg">
-                  <p className="text-green-800 font-bold">
-                    Rating-ul tău: {selectedRating}
-                  </p>
+          <CardContent className="space-y-6">
+            {step === 0 && (
+              <div className="space-y-4">
+                <div>
+                  <Label htmlFor="name" className="text-green-800 font-semibold">
+                    Player Name
+                  </Label>
+                  <Input
+                    id="name"
+                    value={playerName}
+                    onChange={(e) => setPlayerName(e.target.value)}
+                    placeholder="Enter your name..."
+                    className="mt-1"
+                  />
                 </div>
-              )}
-            </div>
-          )}
-
-          {step === 5 && (
-            <div className="text-center space-y-4">
-              <p className="text-green-800">La ce vârstă te vei retrage?</p>
-              <Button 
-                onClick={handleRetireDraw}
-                className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
-                size="lg"
-              >
-                🕐 Extrage Vârsta de Retragere
-              </Button>
-              {selectedRetireAge > 0 && (
-                <div className="mt-4 p-4 bg-green-100 rounded-lg">
-                  <p className="text-green-800 font-bold">
-                    Te vei retrage la: {selectedRetireAge} ani
-                  </p>
+                <div>
+                  <Label htmlFor="age" className="text-green-800 font-semibold">
+                    Age (16-31)
+                  </Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="16"
+                    max="31"
+                    value={playerAge}
+                    onChange={(e) => setPlayerAge(parseInt(e.target.value) || 18)}
+                    className="mt-1"
+                  />
                 </div>
-              )}
-            </div>
-          )}
-
-          {step === 6 && (
-            <div className="space-y-6">
-              <h3 className="text-xl font-bold text-green-800 text-center">
-                Confirmă Jucătorul Tău
-              </h3>
-              <div className="bg-green-50 p-6 rounded-lg space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <span className="font-semibold text-green-800">Nume:</span>
-                    <p>{playerName}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-green-800">Vârstă:</span>
-                    <p>{playerAge} ani</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-green-800">Poziție:</span>
-                    <p>{selectedPosition}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-green-800">Țara:</span>
-                    <p>{selectedCountry}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-green-800">Club Favorit:</span>
-                    <p>{favoriteClub}</p>
-                  </div>
-                  <div>
-                    <span className="font-semibold text-green-800">Rating:</span>
-                    <p>{selectedRating}</p>
-                  </div>
-                  <div className="col-span-2">
-                    <span className="font-semibold text-green-800">Retragere la:</span>
-                    <p>{selectedRetireAge} ani</p>
-                  </div>
-                </div>
+                <Button 
+                  onClick={handleNextStep}
+                  disabled={!playerName.trim()}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  Continue →
+                </Button>
               </div>
-              <Button 
-                onClick={handleCreatePlayer}
-                className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
-                size="lg"
-              >
-                🚀 Începe Cariera!
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+            )}
+
+            {step === 1 && (
+              <div className="text-center space-y-4">
+                <p className="text-green-800">Let's see what position you'll play!</p>
+                <Button 
+                  onClick={handlePositionDraw}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  size="lg"
+                >
+                  🎰 Draw Position
+                </Button>
+                {selectedPosition && (
+                  <div className="mt-4 p-4 bg-green-100 rounded-lg">
+                    <p className="text-green-800 font-bold">
+                      Your position: {selectedPosition}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 2 && (
+              <div className="text-center space-y-4">
+                <p className="text-green-800">Which country will you represent?</p>
+                <Button 
+                  onClick={handleCountryDraw}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  size="lg"
+                >
+                  🌍 Draw Country
+                </Button>
+                {selectedCountry && (
+                  <div className="mt-4 p-4 bg-green-100 rounded-lg">
+                    <p className="text-green-800 font-bold">
+                      Your country: {selectedCountry}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 3 && (
+              <div className="space-y-4">
+                <Label className="text-green-800 font-semibold">
+                  Choose Your Favorite Club in {selectedCountry}
+                </Label>
+                <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
+                  {getAvailableClubs().map((club) => (
+                    <Button
+                      key={club.club}
+                      variant={favoriteClub === club.club ? "default" : "outline"}
+                      onClick={() => setFavoriteClub(club.club)}
+                      className={`text-left justify-start text-sm ${
+                        favoriteClub === club.club 
+                          ? 'bg-green-600 text-white' 
+                          : 'hover:bg-green-50'
+                      }`}
+                    >
+                      {club.club} (Strength: {club.strength})
+                    </Button>
+                  ))}
+                </div>
+                <Button 
+                  onClick={handleNextStep}
+                  disabled={!favoriteClub}
+                  className="w-full bg-green-600 hover:bg-green-700"
+                >
+                  Continue →
+                </Button>
+              </div>
+            )}
+
+            {step === 4 && (
+              <div className="text-center space-y-4">
+                <p className="text-green-800">What rating will you start with?</p>
+                <Button 
+                  onClick={handleRatingDraw}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  size="lg"
+                >
+                  ⭐ Draw Rating
+                </Button>
+                {selectedRating > 0 && (
+                  <div className="mt-4 p-4 bg-green-100 rounded-lg">
+                    <p className="text-green-800 font-bold">
+                      Your rating: {selectedRating}
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 5 && (
+              <div className="text-center space-y-4">
+                <p className="text-green-800">At what age will you retire?</p>
+                <Button 
+                  onClick={handleRetireDraw}
+                  className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
+                  size="lg"
+                >
+                  🕐 Draw Retirement Age
+                </Button>
+                {selectedRetireAge > 0 && (
+                  <div className="mt-4 p-4 bg-green-100 rounded-lg">
+                    <p className="text-green-800 font-bold">
+                      You'll retire at: {selectedRetireAge} years old
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {step === 6 && (
+              <div className="space-y-6">
+                <h3 className="text-xl font-bold text-green-800 text-center">
+                  Confirm Your Player
+                </h3>
+                <div className="bg-green-50 p-6 rounded-lg space-y-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <span className="font-semibold text-green-800">Name:</span>
+                      <p>{playerName}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-green-800">Age:</span>
+                      <p>{playerAge} years old</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-green-800">Position:</span>
+                      <p>{selectedPosition}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-green-800">Country:</span>
+                      <p>{selectedCountry}</p>
+                    </div>
+                    <div className="sm:col-span-2">
+                      <span className="font-semibold text-green-800">Favorite Club:</span>
+                      <p>{favoriteClub}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-green-800">Rating:</span>
+                      <p>{selectedRating}</p>
+                    </div>
+                    <div>
+                      <span className="font-semibold text-green-800">Retirement:</span>
+                      <p>{selectedRetireAge} years old</p>
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleCreatePlayer}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
+                  size="lg"
+                >
+                  🚀 Start Career!
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       <BallDraw
         balls={currentDraw?.balls || {}}
