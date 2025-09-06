@@ -647,6 +647,37 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 </CardContent>
               </Card>
 
+              <Card>
+                <CardHeader>
+                  <CardTitle>European Winners</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                    {seasonResults.globalWinners && Object.entries(seasonResults.globalWinners).map(([comp, winner]) => (
+                      <div key={comp} className="flex justify-between"><span>{comp}</span><span className="font-semibold">{winner}</span></div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Top XI</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    <div>
+                      <div className="font-semibold mb-1">League Top XI</div>
+                      {seasonResults.topXILeague?.map((p, i) => (<div key={i}>{p.position}: {p.club}</div>))}
+                    </div>
+                    <div>
+                      <div className="font-semibold mb-1">Global Top XI</div>
+                      {seasonResults.topXIGlobal?.map((p, i) => (<div key={i}>{p.position}: {p.club} ({p.country})</div>))}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
               </>
             ) : (
               <Card>
