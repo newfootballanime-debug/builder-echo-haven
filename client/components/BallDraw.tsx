@@ -190,7 +190,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                   DRAWING IN PROGRESS...
                 </div>
                 <div className="text-blue-200 text-sm md:text-base">
-                  Ball #{drawIndex + 1}/15
+                  Ball #{Math.min(drawIndex, 15)}/15
                 </div>
               </div>
             )}
