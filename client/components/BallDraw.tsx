@@ -28,9 +28,18 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
 
   useEffect(() => {
     if (isVisible) {
+      // Reset state every time a new draw opens or inputs change
+      setIsDrawing(false);
+      setCurrentBall('');
+      setDrawIndex(0);
+      setFinalResult('');
+      setShowFinal(false);
       setReadyToDraw(true);
+    } else {
+      setIsDrawing(false);
+      setReadyToDraw(false);
     }
-  }, [isVisible]);
+  }, [isVisible, title, balls]);
 
   const startDraw = () => {
     setIsDrawing(true);
@@ -68,7 +77,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-      <Card className="w-full max-w-2xl p-4 md:p-8 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl">
+      <Card className="w-full max-w-2xl p-4 md:p-8 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
         <div className="text-center space-y-4 md:space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold text-blue-100">{title}</h2>
           
