@@ -30,6 +30,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     onComplete?: (result: string) => void
   } | null>(null);
   const [seasonInProgress, setSeasonInProgress] = useState(false);
+  const [firstSeasonHandled, setFirstSeasonHandled] = useState(false);
   const [seasonResults, setSeasonResults] = useState<{
     league: { position: number, total: number },
     cup: { phase: string, details: string[] },
@@ -42,6 +43,15 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
   }, [currentPlayer, onPlayerUpdate]);
+
+  // Auto-sign with a club in Season 1 (like the Python flow)
+  useEffect(() => {
+    if (!firstSeasonHandled && !currentPlayer.club && currentPlayer.season === 1 && !seasonInProgress && !showDraw) {
+      setFirstSeasonHandled(true);
+      // Ensure we simulate the first season without aging
+      findNewClub();
+    }
+  }, [firstSeasonHandled, currentPlayer.club, currentPlayer.season, seasonInProgress, showDraw]);
 
   const updatePlayer = (updates: Partial<Player>) => {
     setCurrentPlayer(prev => ({ ...prev, ...updates }));
@@ -80,26 +90,27 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const country = currentPlayer.country;
     const leagueIndex = currentPlayer.rating >= 80 ? 0 : 1;
     const league = getLeague(leagueIndex, country);
-    
+
     const club = draftClub(
-      country, 
-      currentPlayer.rating, 
-      league, 
-      undefined, 
+      country,
+      currentPlayer.rating,
+      league,
+      undefined,
       currentPlayer.favoriteClub
     );
 
     if (club) {
+      setSeasonInProgress(true);
       updatePlayer({
         club: club.name,
         league: club.league,
         contractYears: 2,
         isOnLoan: false
       });
-      
+
       setTimeout(() => {
         simulateSeason();
-      }, 1000);
+      }, 600);
     }
   };
 
