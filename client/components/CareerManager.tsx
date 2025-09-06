@@ -95,9 +95,10 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const findNewClub = () => {
     const country = currentPlayer.country;
     const leagueIndex = currentPlayer.rating >= 80 ? 0 : 1;
-    const league = getLeague(leagueIndex, country);
+    let league = getLeague(leagueIndex, country);
 
-    const club = draftClub(
+    // Try preferred league
+    let club = draftClub(
       country,
       currentPlayer.rating,
       league,
@@ -105,11 +106,41 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       currentPlayer.favoriteClub
     );
 
+    // Fallback to top league if no club in current league
+    if (!club) {
+      league = getLeague(0, country);
+      club = draftClub(
+        country,
+        currentPlayer.rating,
+        league,
+        undefined,
+        currentPlayer.favoriteClub
+      );
+    }
+
+    // Fallback to first available club in top league
+    if (!club) {
+      const topClubs = getLeagueClubs(country, getLeague(0, country));
+      if (topClubs.length) {
+        club = topClubs[0];
+      }
+    }
+
     if (club) {
       setSeasonInProgress(true);
       updatePlayer({
         club: club.name,
         league: club.league,
+        contractYears: 2,
+        isOnLoan: false
+      });
+    } else {
+      // Last resort generic assignment in top league
+      const topLeague = getLeague(0, country);
+      setSeasonInProgress(true);
+      updatePlayer({
+        club: 'Generic Club',
+        league: topLeague,
         contractYears: 2,
         isOnLoan: false
       });
