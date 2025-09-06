@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useRef } from 'react';
 
 interface BallDrawProps {
   balls: Record<string, number>;
@@ -17,6 +18,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
   const [finalResult, setFinalResult] = useState<string>('');
   const [showFinal, setShowFinal] = useState(false);
   const [readyToDraw, setReadyToDraw] = useState(false);
+  const completedRef = useRef(false);
 
   // Create all balls array
   const allBalls: string[] = [];
@@ -35,6 +37,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
       setFinalResult('');
       setShowFinal(false);
       setReadyToDraw(true);
+      completedRef.current = false;
     } else {
       setIsDrawing(false);
       setReadyToDraw(false);
@@ -64,8 +67,19 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
           setFinalResult(finalBall);
           setShowFinal(true);
           setIsDrawing(false);
-          // Immediately notify parent to proceed; UI will still show result briefly
-          onComplete(finalBall);
+          // Immediately notify parent to proceed (only once)
+          if (!completedRef.current) {
+            completedRef.current = true;
+            onComplete(finalBall);
+          }
+          // Fallback auto-continue in case parent didn't close yet
+          setTimeout(() => {
+            if (!isVisible && completedRef.current) return;
+            if (!completedRef.current) {
+              completedRef.current = true;
+              onComplete(finalBall);
+            }
+          }, 1000);
         }, 300);
       }
     }, 200);
@@ -216,7 +230,12 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                   {finalResult}
                 </div>
                 <Button
-                  onClick={() => finalResult && onComplete(finalResult)}
+                  onClick={() => {
+                    if (finalResult && !completedRef.current) {
+                      completedRef.current = true;
+                      onComplete(finalResult);
+                    }
+                  }}
                   className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 md:py-3 px-6 md:px-8 text-base md:text-lg"
                   size="lg"
                 >
