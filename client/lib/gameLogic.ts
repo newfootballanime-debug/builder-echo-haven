@@ -93,31 +93,29 @@ export function getLeagueClubs(country: string, league: string): Club[] {
 
 // Salary calculation
 export function calculateSalary(player: Player, club: Club): number {
-  const base = (player.rating ** 1.3) * 65 + club.strength * 120;
-  let salary = base;
-  
-  if (club.strength >= 80) {
-    salary *= player.rating >= 88 ? 1.6 : 1.2;
-  }
-  
-  if (salary > 700000) {
-    salary = randomInt(Math.floor(salary * 0.8), Math.floor(salary * 1.13));
-  } else {
-    salary += randomInt(-2000, 12000);
-  }
-  
-  return Math.max(63000, Math.floor(salary));
+  // Realistic yearly salary approximation (in €)
+  // Base grows quadratically with rating around 40-99
+  const base = Math.max(0, (player.rating - 40)) ** 2 * 800; // 65 -> ~500k; 90 -> ~25.6M
+  const clubFactor = 0.8 + (club.strength / 100) * 0.8; // 0.8..1.6
+  const ageFactor = player.age < 22 ? 0.9 : player.age <= 28 ? 1 : 0.95;
+  let salary = base * clubFactor * ageFactor;
+  salary = randomInt(Math.floor(salary * 0.92), Math.floor(salary * 1.08));
+  return Math.min(35000000, Math.max(100000, Math.floor(salary)));
 }
 
 // Market value calculation
 export function calculateMarketValue(player: Player, club: Club, stats: PlayerStats): number {
-  const ageFactor = Math.max(0.5, 1 - (player.age - 25) * 0.05);
-  const statsBonus = (stats.goals + stats.assists) * 100000;
-  
-  let value = (player.rating ** 2) * 10000 + club.strength * 50000 + 1000000 + statsBonus;
-  value *= ageFactor * (player.rating > 90 ? 1.5 : player.rating > 80 ? 1.2 : 1);
-  
-  return Math.min(200000000, Math.max(1000000, Math.floor(value)));
+  // Transfermarkt-like scale (very rough):
+  // rating 60-70 -> 1-8M, 80+ -> 30-120M, 90+ -> up to 200M+
+  const perf = (stats.goals + stats.assists * 0.8);
+  const perfBonus = perf * 500000; // up to a few millions
+  const base = Math.max(0, player.rating - 50);
+  let value = base ** 3 * 700 + 1500000; // 65 -> ~2-4M; 90 -> ~45M
+  const clubFactor = 0.7 + (club.strength / 100) * 0.9; // 0.7..1.6
+  const ageFactor = player.age < 22 ? 1.2 : player.age <= 28 ? 1 : 0.85;
+  value = (value * clubFactor * ageFactor) + perfBonus;
+  if (player.rating >= 88 && club.strength >= 85) value *= 1.8; // elite premium
+  return Math.min(300000000, Math.max(1000000, Math.floor(value)));
 }
 
 // Check if player is in first 11
@@ -300,4 +298,80 @@ export function formatCurrency(amount: number): string {
 // Format large numbers
 export function formatNumber(num: number): string {
   return num.toLocaleString();
+}
+
+// Standings simulation utilities
+export function simulateLeagueStandings(country: string, league: string): Club[] {
+  const clubs = getLeagueClubs(country, league);
+  const scored = clubs.map(c => ({
+    club: c,
+    score: c.strength * (0.9 + Math.random() * 0.3) + randomInt(-5, 10)
+  }));
+  scored.sort((a, b) => b.score - a.score);
+  return scored.map(s => s.club);
+}
+
+export function getAllCountries(): string[] {
+  return Object.keys(LEAGUES);
+}
+
+export function simulateGlobalWinners(): Record<string, string> {
+  const winners: Record<string, string> = {};
+  // European competitions: pick among top league strongest clubs
+  const topClubs: Club[] = [];
+  for (const country of getAllCountries()) {
+    const topLeague = getLeague(0, country);
+    const clubs = getLeagueClubs(country, topLeague);
+    if (clubs.length) {
+      const best = clubs.reduce((a, b) => (b.strength > a.strength ? b : a));
+      topClubs.push(best);
+    }
+  }
+  if (topClubs.length) {
+    const best = topClubs.reduce((a, b) => (b.strength > a.strength ? b : a));
+    winners['Champions League'] = best.name;
+    const rest = topClubs.filter(c => c.name !== best.name);
+    if (rest.length) winners['Europa League'] = rest[Math.floor(Math.random() * rest.length)].name;
+    if (rest.length) winners['Conference League'] = rest[Math.floor(Math.random() * rest.length)].name;
+  }
+  // National cups: just select random strong club per a few countries
+  for (const country of getAllCountries().slice(0, 6)) {
+    const topLeague = getLeague(0, country);
+    const clubs = getLeagueClubs(country, topLeague);
+    if (clubs.length) {
+      const candidate = clubs[randomInt(0, clubs.length - 1)];
+      winners[`${country} Cup`] = candidate.name;
+    }
+  }
+  return winners;
+}
+
+export function generateLeagueTopXI(country: string, league: string): { position: string, club: string }[] {
+  const order = ['GK','RB','CB','CB','LB','CDM','CM','CAM','RW','LW','ST'];
+  const clubs = simulateLeagueStandings(country, league);
+  const picks: { position: string, club: string }[] = [];
+  let idx = 0;
+  for (const pos of order) {
+    const club = clubs[idx % Math.max(1, clubs.length)];
+    picks.push({ position: pos, club: club?.name || 'Unknown' });
+    idx++;
+  }
+  return picks;
+}
+
+export function generateGlobalTopXI(): { position: string, club: string, country: string }[] {
+  const order = ['GK','RB','CB','CB','LB','CDM','CM','CAM','RW','LW','ST'];
+  const bestClubs: Club[] = [];
+  for (const country of getAllCountries()) {
+    const topLeague = getLeague(0, country);
+    const clubs = getLeagueClubs(country, topLeague);
+    if (clubs.length) bestClubs.push(clubs.reduce((a,b)=> (b.strength>a.strength?b:a)));
+  }
+  bestClubs.sort((a,b)=> b.strength - a.strength);
+  const picks: { position: string, club: string, country: string }[] = [];
+  for (let i = 0; i < order.length; i++) {
+    const club = bestClubs[i % Math.max(1, bestClubs.length)];
+    picks.push({ position: order[i], club: club?.name || 'Unknown', country: club?.country || '-' });
+  }
+  return picks;
 }
