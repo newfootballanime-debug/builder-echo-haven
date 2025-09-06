@@ -64,10 +64,8 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
           setFinalResult(finalBall);
           setShowFinal(true);
           setIsDrawing(false);
-
-          setTimeout(() => {
-            onComplete(finalBall);
-          }, 1500);
+          // Immediately notify parent to proceed; UI will still show result briefly
+          onComplete(finalBall);
         }, 300);
       }
     }, 200);
@@ -209,7 +207,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                 className="space-y-4"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.5 }}
+                transition={{ delay: 0.2 }}
               >
                 <div className="text-yellow-300 font-bold text-xl md:text-2xl">
                   🎉 FINAL RESULT 🎉
@@ -217,6 +215,13 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                 <div className="text-2xl md:text-4xl font-bold text-yellow-400 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent break-words">
                   {finalResult}
                 </div>
+                <Button
+                  onClick={() => finalResult && onComplete(finalResult)}
+                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 md:py-3 px-6 md:px-8 text-base md:text-lg"
+                  size="lg"
+                >
+                  Continue
+                </Button>
               </motion.div>
             )}
           </div>
