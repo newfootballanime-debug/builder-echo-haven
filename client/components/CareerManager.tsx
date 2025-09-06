@@ -542,6 +542,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
           <TabsContent value="season" className="space-y-4">
             {seasonResults ? (
+              <>
               <Card>
                 <CardHeader>
                   <CardTitle>Season {currentPlayer.season} Results</CardTitle>
@@ -599,6 +600,24 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   )}
                 </CardContent>
               </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Global League Standings (Top 5)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                    {seasonResults.standings && Object.entries(seasonResults.standings).map(([key, table]) => (
+                      <div key={key}>
+                        <div className="font-semibold mb-1">{key}</div>
+                        {table.map((name, i) => (<div key={i}>{i+1}. {name}</div>))}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              </>
             ) : (
               <Card>
                 <CardContent className="text-center py-12">
