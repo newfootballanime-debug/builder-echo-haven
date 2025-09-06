@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 interface BallDrawProps {
   balls: Record<string, number>;
@@ -27,6 +27,14 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
       allBalls.push(value);
     }
   });
+
+  // Auto-complete when final shown (defensive)
+  useEffect(() => {
+    if (showFinal && finalResult && !completedRef.current) {
+      completedRef.current = true;
+      onComplete(finalResult);
+    }
+  }, [showFinal, finalResult]);
 
   useEffect(() => {
     if (isVisible) {
@@ -89,7 +97,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-      <Card className="w-full max-w-2xl p-4 md:p-8 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
+      <Card className="w-full max-w-2xl p-4 md:p-8 pb-28 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
         <div className="text-center space-y-4 md:space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold text-blue-100">{title}</h2>
           
@@ -229,18 +237,20 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                 <div className="text-2xl md:text-4xl font-bold text-yellow-400 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent break-words">
                   {finalResult}
                 </div>
-                <Button
-                  onClick={() => {
-                    if (finalResult && !completedRef.current) {
-                      completedRef.current = true;
-                      onComplete(finalResult);
-                    }
-                  }}
-                  className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 md:py-3 px-6 md:px-8 text-base md:text-lg"
-                  size="lg"
-                >
-                  Continue
-                </Button>
+                <div className="fixed bottom-4 left-0 right-0 flex justify-center px-4 pointer-events-none">
+                  <Button
+                    onClick={() => {
+                      if (finalResult && !completedRef.current) {
+                        completedRef.current = true;
+                        onComplete(finalResult);
+                      }
+                    }}
+                    className="pointer-events-auto w-full max-w-sm bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 md:py-5 text-lg md:text-xl shadow-2xl rounded-2xl border-2 border-white/40"
+                    size="lg"
+                  >
+                    Continue
+                  </Button>
+                </div>
               </motion.div>
             )}
           </div>
