@@ -48,10 +48,16 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   useEffect(() => {
     if (!firstSeasonHandled && !currentPlayer.club && currentPlayer.season === 1 && !seasonInProgress && !showDraw) {
       setFirstSeasonHandled(true);
-      // Ensure we simulate the first season without aging
       findNewClub();
     }
   }, [firstSeasonHandled, currentPlayer.club, currentPlayer.season, seasonInProgress, showDraw]);
+
+  // Start simulation when a club + league exist and a season is in progress
+  useEffect(() => {
+    if (seasonInProgress && currentPlayer.club && currentPlayer.league && !showDraw && !seasonResults) {
+      simulateSeason();
+    }
+  }, [seasonInProgress, currentPlayer.club, currentPlayer.league, showDraw, seasonResults]);
 
   const updatePlayer = (updates: Partial<Player>) => {
     setCurrentPlayer(prev => ({ ...prev, ...updates }));
@@ -107,10 +113,6 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         contractYears: 2,
         isOnLoan: false
       });
-
-      setTimeout(() => {
-        simulateSeason();
-      }, 600);
     }
   };
 
@@ -118,9 +120,13 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     // Get current club
     const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
     const currentClub = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
-    
+    if (!currentClub) {
+      setSeasonInProgress(false);
+      return;
+    }
+
     // Simulate league position
-    const totalTeams = clubs.length;
+    const totalTeams = clubs.length || 20;
     const leaguePosition = randomInt(1, totalTeams);
     
     // Show evolution draw
