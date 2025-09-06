@@ -354,7 +354,19 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     });
 
     // Winners and Top XI
-    const globalWinners: Record<string, string> = {};
+    const globalWinners: Record<string, string> = (() => {
+      const winners: Record<string, string> = {};
+      let topPool: Club[] = [];
+      Object.keys(LEAGUES).forEach(ct => {
+        const tl = getLeague(0, ct);
+        topPool = topPool.concat(getLeagueClubs(ct, tl));
+      });
+      topPool.sort((a,b)=> b.strength - a.strength);
+      if (topPool[0]) winners['Champions League'] = topPool[0].name;
+      if (topPool[1]) winners['Europa League'] = topPool[1].name;
+      if (topPool[2]) winners['Conference League'] = topPool[2].name;
+      return winners;
+    })();
     const topXILeague = [
       { position: 'GK', club: clubs[0]?.name || '-' },
       { position: 'RB', club: clubs[1 % clubs.length]?.name || '-' },
