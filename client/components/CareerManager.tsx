@@ -342,15 +342,27 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       career: [...currentPlayer.career, careerEntry]
     });
 
+    const countries = Object.keys(LEAGUES).slice(0, 6);
+    const standings: Record<string, string[]> = {};
+    countries.forEach(ct => {
+      const topLeague = getLeague(0, ct);
+      const table = getLeagueClubs(ct, topLeague)
+        .sort((a,b)=> b.strength - a.strength)
+        .slice(0,5)
+        .map(c=>c.name);
+      standings[`${ct} • ${topLeague}`] = table;
+    });
+
     setSeasonResults({
       league: { position, total: totalTeams },
       cup: cupResult,
       european: europeanResult || undefined,
       evolution,
       stats,
-      trophies
+      trophies,
+      standings,
     });
-    
+
     setSeasonInProgress(false);
   };
 
