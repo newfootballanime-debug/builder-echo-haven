@@ -39,7 +39,19 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     european?: { phase: string, details: string[], prize: number },
     evolution: number,
     stats: PlayerStats,
-    trophies: string[]
+    trophies: string[],
+    globalWinners?: Record<string, string>,
+    standings?: Record<string, string[]>,
+    topXILeague?: { position: string, club: string }[],
+    topXIGlobal?: { position: string, club: string, country: string }[]
+  } | null>(null);
+
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [pendingOffer, setPendingOffer] = useState<{
+    type: 'external' | 'domestic' | 'loan',
+    club: Club,
+    salary: number,
+    contractYears: number
   } | null>(null);
 
   useEffect(() => {
