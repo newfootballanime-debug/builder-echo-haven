@@ -91,12 +91,34 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     return clubs[clubs.length - 1];
   };
 
+  const proposeOffer = (type: 'external'|'domestic'|'loan', club: Club, years: number) => {
+    const salary = calculateSalary(currentPlayer, club);
+    setPendingOffer({ type, club, salary, contractYears: years });
+    setOfferOpen(true);
+  };
+
+  const acceptOffer = () => {
+    if (!pendingOffer) return;
+    const c = pendingOffer.club;
+    const updates: Partial<Player> = {
+      club: c.name,
+      league: c.league,
+      country: c.country,
+      salary: pendingOffer.salary,
+      contractYears: pendingOffer.type === 'loan' ? Math.max(1, currentPlayer.contractYears) : pendingOffer.contractYears,
+      isOnLoan: pendingOffer.type === 'loan'
+    };
+    updatePlayer(updates);
+    setOfferOpen(false);
+    setPendingOffer(null);
+  };
+
   const requestDomesticTransfer = () => {
     if (!currentPlayer.country || !currentPlayer.league) return;
     const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
     if (!pool.length) return;
     const chosen = pickWeighted(pool, currentPlayer.rating);
-    updatePlayer({ club: chosen.name, league: chosen.league, isOnLoan: false, contractYears: 3, salary: calculateSalary(currentPlayer, chosen) });
+    proposeOffer('domestic', chosen, 3);
   };
 
   const requestExternalTransfer = () => {
@@ -110,14 +132,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     });
     if (!candidates.length) return;
     const chosen = pickWeighted(candidates, currentPlayer.rating);
-    updatePlayer({
-      club: chosen.name,
-      league: chosen.league,
-      country: chosen.country,
-      isOnLoan: false,
-      contractYears: 3,
-      salary: calculateSalary(currentPlayer, chosen)
-    });
+    proposeOffer('external', chosen, 3);
   };
 
   const requestLoan = () => {
@@ -125,7 +140,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
     if (!pool.length) return;
     const chosen = pickWeighted(pool, currentPlayer.rating);
-    updatePlayer({ club: chosen.name, league: chosen.league, isOnLoan: true, contractYears: Math.max(1, currentPlayer.contractYears), salary: calculateSalary(currentPlayer, chosen) });
+    proposeOffer('loan', chosen, 1);
   };
 
   const requestNewContract = () => {
