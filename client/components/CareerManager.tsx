@@ -5,9 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import BallDraw from './BallDraw';
-import { 
-  Player, Club, CareerHistory, PlayerStats 
+import {
+  Player, Club, CareerHistory, PlayerStats
 } from '@/lib/types';
+import { LEAGUES } from '@/lib/gameData';
 import { 
   getLeague, getLeagueClubs, draftClub, isInFirstEleven, 
   generateSeasonStats, calculateSalary, calculateMarketValue,
@@ -61,6 +62,66 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
   const updatePlayer = (updates: Partial<Player>) => {
     setCurrentPlayer(prev => ({ ...prev, ...updates }));
+  };
+
+  const pickWeighted = (clubs: Club[], rating: number): Club => {
+    const weights = clubs.map(c => {
+      const delta = Math.abs(c.strength - rating);
+      return Math.max(1, 26 - Math.min(20, delta));
+    });
+    const total = weights.reduce((a,b) => a+b, 0);
+    let r = Math.random() * total;
+    for (let i = 0; i < clubs.length; i++) {
+      r -= weights[i];
+      if (r <= 0) return clubs[i];
+    }
+    return clubs[clubs.length - 1];
+  };
+
+  const requestDomesticTransfer = () => {
+    if (!currentPlayer.country || !currentPlayer.league) return;
+    const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
+    if (!pool.length) return;
+    const chosen = pickWeighted(pool, currentPlayer.rating);
+    updatePlayer({ club: chosen.name, league: chosen.league, isOnLoan: false, contractYears: 3, salary: calculateSalary(currentPlayer, chosen) });
+  };
+
+  const requestExternalTransfer = () => {
+    const countries = Object.keys(LEAGUES);
+    let candidates: Club[] = [];
+    countries.forEach(country => {
+      const topLeague = getLeague(0, country);
+      candidates = candidates.concat(
+        getLeagueClubs(country, topLeague).filter(c => !(country === currentPlayer.country && c.name === currentPlayer.club))
+      );
+    });
+    if (!candidates.length) return;
+    const chosen = pickWeighted(candidates, currentPlayer.rating);
+    updatePlayer({
+      club: chosen.name,
+      league: chosen.league,
+      country: chosen.country,
+      isOnLoan: false,
+      contractYears: 3,
+      salary: calculateSalary(currentPlayer, chosen)
+    });
+  };
+
+  const requestLoan = () => {
+    if (!currentPlayer.country || !currentPlayer.league) return;
+    const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
+    if (!pool.length) return;
+    const chosen = pickWeighted(pool, currentPlayer.rating);
+    updatePlayer({ club: chosen.name, league: chosen.league, isOnLoan: true, contractYears: Math.max(1, currentPlayer.contractYears), salary: calculateSalary(currentPlayer, chosen) });
+  };
+
+  const requestNewContract = () => {
+    if (!currentPlayer.club || !currentPlayer.league) return;
+    const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    const club = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
+    if (!club) return;
+    const newSalary = Math.floor(calculateSalary(currentPlayer, club) * 1.1);
+    updatePlayer({ salary: newSalary, contractYears: Math.max(2, currentPlayer.contractYears + 1) });
   };
 
   const handleNewSeason = () => {
@@ -181,11 +242,9 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const totalTeams = clubs.length || 20;
     const leaguePosition = randomInt(1, totalTeams);
     
-    // Show evolution draw
+    // Show evolution draw with equal chances 5-10 (Python parity)
     const isStarter = isInFirstEleven(currentPlayer, currentClub);
-    const evolutionBalls = isStarter 
-      ? { '10': 7, '9': 5, '8': 3, '7': 2, '6': 1 }
-      : { '7': 5, '6': 3, '5': 2, '8': 2 };
+    const evolutionBalls = { '5': 1, '6': 1, '7': 1, '8': 1, '9': 1, '10': 1 };
 
     setCurrentDraw({
       type: 'evolution',
@@ -515,7 +574,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 <CardTitle>Available Actions</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <Button 
+                <Button
                   onClick={handleNewSeason}
                   disabled={seasonInProgress}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
@@ -523,24 +582,24 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 >
                   {seasonInProgress ? '⏳ Simulating...' : '▶️ New Season'}
                 </Button>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button variant="outline" disabled>
-                    🔄 Request Transfer
+                  <Button variant="outline" onClick={requestExternalTransfer} disabled={seasonInProgress}>
+                    🔄 Request Transfer (Abroad)
                   </Button>
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" onClick={requestNewContract} disabled={seasonInProgress}>
                     📝 Renegotiate Contract
                   </Button>
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" onClick={requestLoan} disabled={seasonInProgress}>
                     🏃 Request Loan
                   </Button>
-                  <Button variant="outline" disabled>
+                  <Button variant="outline" onClick={requestDomesticTransfer} disabled={seasonInProgress}>
                     🏠 Domestic Transfer
                   </Button>
                 </div>
-                
+
                 <p className="text-sm text-gray-500 text-center">
-                  Additional actions will be available in future versions
+                  Actions apply instantly and affect next season simulation
                 </p>
               </CardContent>
             </Card>
