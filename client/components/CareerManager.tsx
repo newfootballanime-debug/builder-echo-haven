@@ -149,11 +149,32 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
   const simulateSeason = () => {
     // Get current club
-    const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
-    const currentClub = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
+    let clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    if (!clubs.length) {
+      const topLeague = getLeague(0, currentPlayer.country);
+      const topClubs = getLeagueClubs(currentPlayer.country, topLeague);
+      if (topClubs.length) {
+        clubs = topClubs;
+        if (!currentPlayer.league) updatePlayer({ league: topLeague });
+      }
+    }
+
+    let currentClub = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
     if (!currentClub) {
-      setSeasonInProgress(false);
-      return;
+      // Create generic club if absolutely none available
+      const genericClub = {
+        name: 'Generic Club',
+        country: currentPlayer.country,
+        league: getLeague(0, currentPlayer.country),
+        strength: Math.max(60, currentPlayer.rating + 5),
+        budget: 10000000,
+        europeanComp: ''
+      } as Club;
+      clubs = [genericClub];
+      currentClub = genericClub;
+      updatePlayer({ club: genericClub.name, league: genericClub.league });
+    } else if (!currentPlayer.club) {
+      updatePlayer({ club: currentClub.name });
     }
 
     // Simulate league position
