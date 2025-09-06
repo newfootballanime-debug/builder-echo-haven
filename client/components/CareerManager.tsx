@@ -666,6 +666,28 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         </Tabs>
       </div>
 
+      <AlertDialog open={offerOpen} onOpenChange={setOfferOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Transfer Offer</AlertDialogTitle>
+            <AlertDialogDescription>
+              {pendingOffer ? (
+                <div className="space-y-2">
+                  <div>Type: {pendingOffer.type}</div>
+                  <div>Club: <span className="font-semibold">{pendingOffer.club.name}</span> ({pendingOffer.club.country} • {pendingOffer.club.league})</div>
+                  <div>Proposed salary: {formatCurrency(pendingOffer.salary)}/year</div>
+                  <div>Contract: {pendingOffer.contractYears} years</div>
+                </div>
+              ) : null}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setPendingOffer(null)}>Refuse</AlertDialogCancel>
+            <AlertDialogAction onClick={acceptOffer}>Accept</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <BallDraw
         balls={currentDraw?.balls || {}}
         title={currentDraw?.title || ''}
