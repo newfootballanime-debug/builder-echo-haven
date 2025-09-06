@@ -353,6 +353,22 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       standings[`${ct} • ${topLeague}`] = table;
     });
 
+    // Winners and Top XI
+    const globalWinners: Record<string, string> = {};
+    const topXILeague = [
+      { position: 'GK', club: clubs[0]?.name || '-' },
+      { position: 'RB', club: clubs[1 % clubs.length]?.name || '-' },
+      { position: 'CB', club: clubs[2 % clubs.length]?.name || '-' },
+      { position: 'CB', club: clubs[3 % clubs.length]?.name || '-' },
+      { position: 'LB', club: clubs[4 % clubs.length]?.name || '-' },
+      { position: 'CDM', club: clubs[0]?.name || '-' },
+      { position: 'CM', club: clubs[1 % clubs.length]?.name || '-' },
+      { position: 'CAM', club: clubs[2 % clubs.length]?.name || '-' },
+      { position: 'RW', club: clubs[3 % clubs.length]?.name || '-' },
+      { position: 'LW', club: clubs[4 % clubs.length]?.name || '-' },
+      { position: 'ST', club: clubs[0]?.name || '-' },
+    ];
+
     setSeasonResults({
       league: { position, total: totalTeams },
       cup: cupResult,
@@ -361,6 +377,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       stats,
       trophies,
       standings,
+      globalWinners,
+      topXILeague,
     });
 
     setSeasonInProgress(false);
