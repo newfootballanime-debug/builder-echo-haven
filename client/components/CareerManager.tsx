@@ -367,18 +367,24 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       if (topPool[2]) winners['Conference League'] = topPool[2].name;
       return winners;
     })();
+    // Build Top XI using league clubs deterministically
+    const leagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    const refClubs = leagueClubs.length
+      ? leagueClubs
+      : getLeagueClubs(currentPlayer.country, getLeague(0, currentPlayer.country));
+    const safeLen = Math.max(1, refClubs.length);
     const topXILeague = [
-      { position: 'GK', club: clubs[0]?.name || '-' },
-      { position: 'RB', club: clubs[1 % clubs.length]?.name || '-' },
-      { position: 'CB', club: clubs[2 % clubs.length]?.name || '-' },
-      { position: 'CB', club: clubs[3 % clubs.length]?.name || '-' },
-      { position: 'LB', club: clubs[4 % clubs.length]?.name || '-' },
-      { position: 'CDM', club: clubs[0]?.name || '-' },
-      { position: 'CM', club: clubs[1 % clubs.length]?.name || '-' },
-      { position: 'CAM', club: clubs[2 % clubs.length]?.name || '-' },
-      { position: 'RW', club: clubs[3 % clubs.length]?.name || '-' },
-      { position: 'LW', club: clubs[4 % clubs.length]?.name || '-' },
-      { position: 'ST', club: clubs[0]?.name || '-' },
+      { position: 'GK',  club: refClubs[0 % safeLen]?.name || '-' },
+      { position: 'RB',  club: refClubs[1 % safeLen]?.name || '-' },
+      { position: 'CB',  club: refClubs[2 % safeLen]?.name || '-' },
+      { position: 'CB',  club: refClubs[3 % safeLen]?.name || '-' },
+      { position: 'LB',  club: refClubs[4 % safeLen]?.name || '-' },
+      { position: 'CDM', club: refClubs[0 % safeLen]?.name || '-' },
+      { position: 'CM',  club: refClubs[1 % safeLen]?.name || '-' },
+      { position: 'CAM', club: refClubs[2 % safeLen]?.name || '-' },
+      { position: 'RW',  club: refClubs[3 % safeLen]?.name || '-' },
+      { position: 'LW',  club: refClubs[4 % safeLen]?.name || '-' },
+      { position: 'ST',  club: refClubs[0 % safeLen]?.name || '-' },
     ];
 
     setSeasonResults({
