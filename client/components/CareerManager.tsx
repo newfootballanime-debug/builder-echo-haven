@@ -364,7 +364,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       const table = getLeagueClubs(ct, topLeague)
         .sort((a,b)=> b.strength - a.strength)
         .slice(0,5)
-        .map(c=>c.name);
+        .map(c=> `${c.name} • Str ${c.strength} • ${formatCurrency(c.budget)}`);
       const rank = getCountryRank(ct);
       standings[`${ct} • ${topLeague} (Rank ${rank})`] = table;
     });
