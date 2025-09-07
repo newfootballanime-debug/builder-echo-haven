@@ -293,11 +293,12 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         const ranked = [...clubs].sort((a,b)=> b.strength - a.strength);
         const expected = Math.max(1, ranked.findIndex(c=>c.name===currentClub.name)+1 || Math.ceil(totalTeams/2));
         const leagueBalls: Record<string, number> = {};
+        const sigmaBase = Math.max(1.3, (100 - currentClub.strength) / 22 + (totalTeams/30));
         for (let pos=1; pos<=totalTeams; pos++) {
           const dist = Math.abs(pos - expected);
-          const base = Math.max(1, Math.round(18 - dist*2));
-          const starterBoost = isStarter ? Math.ceil(evo/3) : 0;
-          leagueBalls[String(pos)] = Math.max(1, base + starterBoost);
+          const w = gaussianWeight(dist, sigmaBase);
+          const boosted = isStarter ? Math.round(w * (1 + evo/30)) : w;
+          leagueBalls[String(pos)] = Math.max(1, boosted);
         }
         nextDrawQueued.current = true;
         setCurrentDraw({
@@ -310,7 +311,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             const phases = ["16-imi","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
             const cupBalls: Record<string, number> = {};
             phases.forEach((ph, i)=>{
-              const w = Math.max(1, Math.round(6 - i + (currentClub.strength-70)/10));
+              const w = gaussianWeight(i, Math.max(1.2, (100 - currentClub.strength)/20));
               cupBalls[ph] = w;
             });
             nextDrawQueued.current = true;
@@ -331,7 +332,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   const euroBalls: Record<string, number> = {};
                   euroPhases.forEach((ph, i)=>{
                     const base = competition==='Champions League'?6: competition==='Europa League'?5:4;
-                    euroBalls[ph] = Math.max(1, Math.round(base - i + (currentClub.strength-70)/8));
+                    const w = gaussianWeight(i, Math.max(1.2, (100 - currentClub.strength)/18)) * (base/4);
+                    euroBalls[ph] = Math.max(1, Math.round(w));
                   });
                   nextDrawQueued.current = true;
                   setCurrentDraw({
@@ -384,11 +386,11 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     if (position === 1) {
       trophies.push(`🏆 ${currentPlayer.league}`);
     }
-    if (cupResult.phase === "Winner") {
+    if (cupResult.phase === "Câștigător") {
       trophies.push(`🏆 National Cup`);
     }
-    if (europeanResult?.phase === "Winner") {
-      trophies.push(`🏆 ${europeanResult.phase}`);
+    if (europeanResult?.phase === "Câștigător") {
+      trophies.push(`🏆 European Title`);
     }
 
     // Update player attributes and rating
@@ -420,7 +422,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       const topLeague = getLeague(0, ct);
       const table = getLeagueClubs(ct, topLeague)
         .sort((a,b)=> b.strength - a.strength)
-        .slice(0,5)
+        .slice(0,10)
         .map(c=> `${c.name} • Str ${c.strength} • ${formatCurrency(c.budget)}`);
       const rank = getCountryRank(ct);
       standings[`${ct} • ${topLeague} (Rank ${rank})`] = table;
@@ -448,6 +450,18 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       { position: 'ST',  club: refClubs[0 % safeLen]?.name || '-' },
     ];
 
+    // Promotion/Relegation league change for player next season
+    const leagueIdx = getLeagueIndex(currentPlayer.country, currentPlayer.league);
+    const { promote, relegate } = getPromotionRelegationCounts(totalTeams);
+    let nextLeague = currentPlayer.league;
+    if (leagueIdx === 0 && position > totalTeams - relegate) {
+      const lower = getLeague(1, currentPlayer.country);
+      if (lower) nextLeague = lower;
+    } else if (leagueIdx > 0 && position <= promote) {
+      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
+      if (upper) nextLeague = upper;
+    }
+
     setSeasonResults({
       league: { position, total: totalTeams },
       cup: cupResult,
@@ -460,6 +474,9 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       topXILeague,
     });
 
+    if (nextLeague !== currentPlayer.league) {
+      updatePlayer({ league: nextLeague });
+    }
     setSeasonInProgress(false);
   };
 
