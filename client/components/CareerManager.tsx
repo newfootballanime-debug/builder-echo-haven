@@ -490,6 +490,9 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     if (nextLeague !== currentPlayer.league) {
       updatePlayer({ league: nextLeague });
     }
+    if (nextLeague !== currentPlayer.league) {
+      updatePlayer({ league: nextLeague });
+    }
     setSeasonInProgress(false);
   };
 
