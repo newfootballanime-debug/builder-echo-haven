@@ -9,6 +9,20 @@ export function randomChoice<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
+// Position helpers to handle both EN and RO labels
+function getPositionCategory(position: string): 'GK' | 'DEF' | 'MID' | 'ATT' {
+  const p = position.toLowerCase();
+  if (/(gk|goalkeeper|portar)/.test(p)) return 'GK';
+  if (/(cb|rb|lb|back|defender|fundas|fundaș)/.test(p)) return 'DEF';
+  if (/(mid|mijloc|cdm|cm|cam|rm|lm)/.test(p)) return 'MID';
+  if (/(st|striker|winger|rw|lw|atacant|forward)/.test(p)) return 'ATT';
+  // Fallback: infer by common names
+  if (p.includes('wing') || p.includes('striker') || p.includes('atac')) return 'ATT';
+  if (p.includes('mid')) return 'MID';
+  if (p.includes('back') || p.includes('def')) return 'DEF';
+  return 'MID';
+}
+
 export function randomInt(min: number, max: number): number {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
@@ -38,25 +52,20 @@ export function generateRandomName(nationality?: string): string {
 // Initial player attributes based on position and rating
 export function generateInitialAttributes(position: string, rating: number): Record<string, number> {
   const attributes: Record<string, number> = {};
-  
-  // Position-specific attribute bonuses
-  const positionBonuses: Record<string, string[]> = {
-    "Portar": ["Diving", "Reflexes", "Handling", "Positioning", "Kicking", "Speed"],
-    "Fundaș Dreapta": ['Pace', 'Passing', 'Dribbling', 'Defending', 'Physical'],
-    "Fundaș Central": ['Defending', 'Physical', 'Passing', 'Pace'],
-    "Fundaș Stânga": ['Pace', 'Passing', 'Dribbling', 'Defending', 'Physical'],
-    "Mijlocaș Defensiv": ['Passing', 'Defending', 'Physical'],
-    "Mijlocaș Central": ['Passing', 'Dribbling', 'Defending', 'Physical'],
-    "Mijlocaș Ofensiv": ['Passing', 'Dribbling', 'Shooting', 'Pace'],
-    "Mijlocaș Dreapta": ['Pace', 'Passing', 'Dribbling', 'Shooting'],
-    "Mijlocaș Stânga": ['Pace', 'Passing', 'Dribbling', 'Shooting'],
-    "Atacant Dreapta": ['Pace', 'Dribbling', 'Shooting', 'Physical'],
-    "Atacant Central": ['Shooting', 'Pace', 'Dribbling', 'Physical'],
-    "Atacant Stânga": ['Pace', 'Dribbling', 'Shooting', 'Physical'],
-  };
 
-  const relevantAttributes = positionBonuses[position] || FIFA_ATTRIBUTES;
-  
+  const cat = getPositionCategory(position);
+  let relevantAttributes: string[];
+  if (cat === 'GK') {
+    relevantAttributes = ["Diving", "Reflexes", "Handling", "Positioning", "Kicking", "Speed"];
+  } else if (cat === 'DEF') {
+    relevantAttributes = ['Defending', 'Physical', 'Passing', 'Pace'];
+  } else if (cat === 'MID') {
+    relevantAttributes = ['Passing', 'Dribbling', 'Physical', 'Pace'];
+  } else {
+    // ATT
+    relevantAttributes = ['Shooting', 'Pace', 'Dribbling', 'Physical'];
+  }
+
   for (const attr of FIFA_ATTRIBUTES) {
     const bonus = relevantAttributes.includes(attr) ? 3 : 0;
     const baseValue = Math.max(40, Math.min(99, randomInt(rating - 12, rating + 6) + bonus));
@@ -93,29 +102,29 @@ export function getLeagueClubs(country: string, league: string): Club[] {
 
 // Salary calculation
 export function calculateSalary(player: Player, club: Club): number {
-  // Realistic yearly salary approximation (in €)
-  // Base grows quadratically with rating around 40-99
-  const base = Math.max(0, (player.rating - 40)) ** 2 * 800; // 65 -> ~500k; 90 -> ~25.6M
-  const clubFactor = 0.8 + (club.strength / 100) * 0.8; // 0.8..1.6
+  // Yearly salary approximation (in €), rebalanced to Transfermarkt-like scales
+  // Example: 60 -> ~150–350k, 70 -> ~300–900k, 80 -> ~1–4.5M, 90 -> up to ~12–15M
+  const base = Math.max(0, player.rating - 40) ** 2 * 400; // halved vs before
+  const clubFactor = 0.6 + (club.strength / 100) * 0.8; // 0.6..1.4
   const ageFactor = player.age < 22 ? 0.9 : player.age <= 28 ? 1 : 0.95;
   let salary = base * clubFactor * ageFactor;
-  salary = randomInt(Math.floor(salary * 0.92), Math.floor(salary * 1.08));
-  return Math.min(35000000, Math.max(100000, Math.floor(salary)));
+  salary = randomInt(Math.floor(salary * 0.9), Math.floor(salary * 1.1));
+  return Math.min(15000000, Math.max(80000, Math.floor(salary)));
 }
 
 // Market value calculation
 export function calculateMarketValue(player: Player, club: Club, stats: PlayerStats): number {
-  // Transfermarkt-like scale (very rough):
-  // rating 60-70 -> 1-8M, 80+ -> 30-120M, 90+ -> up to 200M+
-  const perf = (stats.goals + stats.assists * 0.8);
-  const perfBonus = perf * 500000; // up to a few millions
+  // Transfermarkt-like scale (rebalanced):
+  // rating 60 -> ~1–3M, 70 -> ~3–7M, 80 -> ~20–60M, 90 -> 80–180M
+  const perf = (stats.goals + (stats.assists || 0) * 0.8);
+  const perfBonus = perf * 350000; // modest influence
   const base = Math.max(0, player.rating - 50);
-  let value = base ** 3 * 700 + 1500000; // 65 -> ~2-4M; 90 -> ~45M
-  const clubFactor = 0.7 + (club.strength / 100) * 0.9; // 0.7..1.6
-  const ageFactor = player.age < 22 ? 1.2 : player.age <= 28 ? 1 : 0.85;
+  let value = base ** 3 * 300 + 1000000; // softer curve
+  const clubFactor = 0.7 + (club.strength / 100) * 0.7; // 0.7..1.4
+  const ageFactor = player.age < 22 ? 1.25 : player.age <= 28 ? 1 : 0.85;
   value = (value * clubFactor * ageFactor) + perfBonus;
-  if (player.rating >= 88 && club.strength >= 85) value *= 1.8; // elite premium
-  return Math.min(300000000, Math.max(1000000, Math.floor(value)));
+  if (player.rating >= 88 && club.strength >= 85) value *= 1.6; // elite premium
+  return Math.min(200000000, Math.max(700000, Math.floor(value)));
 }
 
 // Check if player is in first 11
@@ -127,42 +136,43 @@ export function isInFirstEleven(player: Player, club: Club): boolean {
 
 // Generate season stats
 export function generateSeasonStats(
-  player: Player, 
-  club: Club, 
-  isStarter: boolean, 
+  player: Player,
+  club: Club,
+  isStarter: boolean,
   evolution: number
 ): PlayerStats {
   const stats: PlayerStats = { goals: 0, assists: 0 };
-  
+
   const baseMatches = isStarter ? 35 : 18;
   const ratingFactor = player.rating / 100;
   const teamFactor = club.strength / 100;
   const evolutionBonus = (evolution / 10) * 2.0;
-  
-  const positionType = player.position;
-  
-  if (positionType.includes("Atacant")) {
-    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * Math.random() * 0.5 * evolutionBonus);
-    stats.assists = Math.floor(stats.goals * (0.4 + Math.random() * 0.2));
-  } else if (positionType.includes("Mijlocaș")) {
-    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * (0.3 + Math.random() * 0.3) * evolutionBonus);
-    stats.assists = Math.floor(stats.goals * (0.7 + Math.random() * 0.3));
-  } else if (positionType.includes("Fundaș")) {
-    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * (0.1 + Math.random() * 0.1) * evolutionBonus);
-    stats.assists = Math.floor(stats.goals * (0.5 + Math.random() * 0.2));
-  } else if (player.position === "Portar") {
-    stats.cleanSheets = Math.floor(baseMatches * ratingFactor * teamFactor * (0.5 + Math.random() * 0.3) * evolutionBonus);
+
+  const cat = getPositionCategory(player.position);
+
+  if (cat === 'ATT') {
+    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * (0.5 + Math.random() * 0.35) * evolutionBonus);
+    stats.assists = Math.floor(baseMatches * 0.15 * ratingFactor * (0.8 + Math.random() * 0.6));
+  } else if (cat === 'MID') {
+    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * (0.15 + Math.random() * 0.25) * evolutionBonus);
+    stats.assists = Math.floor(baseMatches * 0.25 * ratingFactor * (0.8 + Math.random() * 0.6));
+  } else if (cat === 'DEF') {
+    stats.goals = Math.floor(baseMatches * ratingFactor * teamFactor * (0.04 + Math.random() * 0.09) * evolutionBonus);
+    stats.assists = Math.floor(baseMatches * 0.06 * ratingFactor * (0.7 + Math.random() * 0.5));
+  } else {
+    // GK
+    stats.cleanSheets = Math.floor(baseMatches * ratingFactor * teamFactor * (0.4 + Math.random() * 0.35) * evolutionBonus);
   }
 
   // Bonus for high-rated players
-  if (player.rating > 85) {
-    stats.goals += randomInt(8, 18);
-    stats.assists += randomInt(5, 12);
+  if (player.rating > 85 && cat !== 'GK') {
+    stats.goals += randomInt(5, 12);
+    stats.assists += randomInt(4, 10);
   }
-  
-  if (player.rating > 90 && evolution >= 9) {
-    stats.goals += randomInt(8, 15);
-    stats.assists += randomInt(5, 10);
+
+  if (player.rating > 90 && evolution >= 9 && cat === 'ATT') {
+    stats.goals += randomInt(6, 12);
+    stats.assists += randomInt(4, 8);
   }
 
   return stats;
