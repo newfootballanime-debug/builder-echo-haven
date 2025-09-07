@@ -270,28 +270,29 @@ export function simulateEuropean(club: Club, competition: string): { phase: stri
   const details: string[] = [];
   let currentPhase = 0;
   let prize = 0;
-  
+
   for (let i = 0; i < phases.length; i++) {
     const phase = phases[i];
-    const successProbability = Math.max(1, 6 - i + (club.strength - 70) / 8);
+    const base = competition === 'Champions League' ? 6 : competition === 'Europa League' ? 5 : 4;
+    const successProbability = Math.max(1, base - i + (club.strength - 70) / 8);
     const totalProbability = 10;
-    
+
     if (Math.random() * totalProbability < successProbability) {
       const score = `${randomInt(0, 4)}-${randomInt(0, 4)}`;
       details.push(`${phase}: Victorie (${score})`);
       currentPhase = i;
-      prize += 5000000; // Progress prize
+      prize += competition === 'Champions League' ? 7000000 : competition === 'Europa League' ? 3500000 : 1500000;
     } else {
       const score = `${randomInt(0, 4)}-${randomInt(0, 4)}`;
       details.push(`${phase}: Eliminat (${score})`);
       break;
     }
   }
-  
+
   if (phases[currentPhase] === "Câștigător") {
-    prize += 25000000; // Win bonus
+    prize += competition === 'Champions League' ? 35000000 : competition === 'Europa League' ? 15000000 : 7000000;
   }
-  
+
   return { phase: phases[currentPhase], details, prize };
 }
 
@@ -325,17 +326,61 @@ export function getAllCountries(): string[] {
   return Object.keys(LEAGUES);
 }
 
+// --- UEFA coefficients (simplified) ---
+export const COUNTRY_COEFFICIENTS: Record<string, number> = (() => {
+  const base: Record<string, number> = {};
+  [
+    ['England', 100], ['Spain', 98], ['Germany', 95], ['Italy', 93], ['France', 85],
+    ['Netherlands', 78], ['Portugal', 76], ['Belgium', 62], ['Scotland', 58], ['Turkey', 52],
+    ['Austria', 50], ['Switzerland', 48], ['Czech Republic', 46], ['Greece', 45], ['Denmark', 44],
+    ['Croatia', 43], ['Poland', 42], ['Romania', 40], ['Norway', 38], ['Sweden', 37]
+  ].forEach(([c, v]) => (base[c as string] = v as number));
+  return base;
+})();
+
+export function getCountryRank(country: string): number {
+  const sorted = Object.entries(COUNTRY_COEFFICIENTS).sort((a, b) => b[1] - a[1]).map(([c]) => c);
+  const idx = sorted.indexOf(country);
+  return idx === -1 ? sorted.length : idx + 1;
+}
+
+export function getEuropeanSlots(country: string): { ucl: number; uel: number; uecl: number } {
+  const rank = getCountryRank(country);
+  if (rank <= 4) return { ucl: 4, uel: 2, uecl: 1 };
+  if (rank <= 6) return { ucl: 3, uel: 2, uecl: 1 };
+  if (rank <= 15) return { ucl: 2, uel: 1, uecl: 2 };
+  return { ucl: 1, uel: 0, uecl: 2 };
+}
+
+function findClubCountry(name: string): string | null {
+  for (const country of Object.keys(CLUBS)) {
+    for (const c of CLUBS[country] || []) {
+      if (c.club === name || c.club === name) return country;
+    }
+  }
+  return null;
+}
+
+export function registerEuropeanWinners(winners: Record<string, string>) {
+  const weights: Record<string, number> = {
+    'Champions League': 10,
+    'Europa League': 7,
+    'Conference League': 5,
+  };
+  for (const [comp, clubName] of Object.entries(winners)) {
+    if (!(comp in weights)) continue;
+    const country = findClubCountry(clubName);
+    if (country) COUNTRY_COEFFICIENTS[country] = (COUNTRY_COEFFICIENTS[country] || 35) + weights[comp];
+  }
+}
+
 export function simulateGlobalWinners(): Record<string, string> {
   const winners: Record<string, string> = {};
-  // European competitions: pick among top league strongest clubs
   const topClubs: Club[] = [];
   for (const country of getAllCountries()) {
     const topLeague = getLeague(0, country);
     const clubs = getLeagueClubs(country, topLeague);
-    if (clubs.length) {
-      const best = clubs.reduce((a, b) => (b.strength > a.strength ? b : a));
-      topClubs.push(best);
-    }
+    if (clubs.length) topClubs.push(clubs.reduce((a, b) => (b.strength > a.strength ? b : a)));
   }
   if (topClubs.length) {
     const best = topClubs.reduce((a, b) => (b.strength > a.strength ? b : a));
@@ -344,15 +389,7 @@ export function simulateGlobalWinners(): Record<string, string> {
     if (rest.length) winners['Europa League'] = rest[Math.floor(Math.random() * rest.length)].name;
     if (rest.length) winners['Conference League'] = rest[Math.floor(Math.random() * rest.length)].name;
   }
-  // National cups: just select random strong club per a few countries
-  for (const country of getAllCountries().slice(0, 6)) {
-    const topLeague = getLeague(0, country);
-    const clubs = getLeagueClubs(country, topLeague);
-    if (clubs.length) {
-      const candidate = clubs[randomInt(0, clubs.length - 1)];
-      winners[`${country} Cup`] = candidate.name;
-    }
-  }
+  registerEuropeanWinners(winners);
   return winners;
 }
 
