@@ -27,13 +27,6 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
     }
   });
 
-  // Auto-complete when final shown (defensive)
-  useEffect(() => {
-    if (showFinal && finalResult && !completedRef.current) {
-      completedRef.current = true;
-      onComplete(finalResult);
-    }
-  }, [showFinal, finalResult]);
 
   useEffect(() => {
     if (isVisible) {
@@ -74,19 +67,6 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
           setFinalResult(finalBall);
           setShowFinal(true);
           setIsDrawing(false);
-          // Immediately notify parent to proceed (only once)
-          if (!completedRef.current) {
-            completedRef.current = true;
-            onComplete(finalBall);
-          }
-          // Fallback auto-continue in case parent didn't close yet
-          setTimeout(() => {
-            if (!isVisible && completedRef.current) return;
-            if (!completedRef.current) {
-              completedRef.current = true;
-              onComplete(finalBall);
-            }
-          }, 1000);
         }, 300);
       }
     }, 200);
