@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -50,6 +50,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const [standingsKey, setStandingsKey] = useState<string | null>(null);
 
   const [offerOpen, setOfferOpen] = useState(false);
+  const nextDrawQueued = useRef(false);
   const [pendingOffer, setPendingOffer] = useState<{
     type: 'external' | 'domestic' | 'loan',
     club: Club,
@@ -298,6 +299,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           const starterBoost = isStarter ? Math.ceil(evo/3) : 0;
           leagueBalls[String(pos)] = Math.max(1, base + starterBoost);
         }
+        nextDrawQueued.current = true;
         setCurrentDraw({
           type: 'league',
           balls: leagueBalls,
@@ -311,6 +313,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
               const w = Math.max(1, Math.round(6 - i + (currentClub.strength-70)/10));
               cupBalls[ph] = w;
             });
+            nextDrawQueued.current = true;
             setCurrentDraw({
               type: 'cup',
               balls: cupBalls,
@@ -330,6 +333,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                     const base = competition==='Champions League'?6: competition==='Europa League'?5:4;
                     euroBalls[ph] = Math.max(1, Math.round(base - i + (currentClub.strength-70)/8));
                   });
+                  nextDrawQueued.current = true;
                   setCurrentDraw({
                     type: 'european',
                     balls: euroBalls,
@@ -502,6 +506,10 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const handleDrawComplete = (result: string) => {
     if (currentDraw?.onComplete) {
       currentDraw.onComplete(result);
+    }
+    if (nextDrawQueued.current) {
+      nextDrawQueued.current = false;
+      return;
     }
     setShowDraw(false);
     setCurrentDraw(null);
