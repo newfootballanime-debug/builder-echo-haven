@@ -309,12 +309,16 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     // Simulate cup
     const cupResult = simulateCup(club, currentPlayer.country);
     
-    // Simulate European competition
+    // Simulate European competition by UEFA slots (simplified)
     let europeanResult = null;
-    if (position <= 8 && currentPlayer.league === getLeague(0, currentPlayer.country)) {
-      const competitions = ['Champions League', 'Europa League', 'Conference League'];
-      const competition = competitions[Math.min(2, Math.floor((position - 1) / 3))];
-      europeanResult = simulateEuropean(club, competition);
+    if (currentPlayer.league === getLeague(0, currentPlayer.country)) {
+      const slots = getEuropeanSlots(currentPlayer.country);
+      const place = position;
+      let competition: 'Champions League' | 'Europa League' | 'Conference League' | null = null;
+      if (place <= slots.ucl) competition = 'Champions League';
+      else if (place <= slots.ucl + slots.uel) competition = 'Europa League';
+      else if (place <= slots.ucl + slots.uel + slots.uecl) competition = 'Conference League';
+      if (competition) europeanResult = simulateEuropean(club, competition);
     }
 
     // Calculate trophies
