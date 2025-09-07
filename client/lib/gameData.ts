@@ -368,6 +368,175 @@ export const CLUBS: Record<string, Array<{club: string, strength: number, league
   ]
 };
 
+// --- Generated 2025-26 leagues and clubs (auto strength/budget) ---
+const split = (s: string) => s.split(',').map(t => t.trim()).filter(Boolean);
+
+// Teams per league as comma-separated strings to keep file compact
+const TEAM_LISTS_2025_26: Record<string, Record<string, string>> = {
+  'England': {
+    'Premier League': 'Manchester City, Arsenal, Liverpool, Chelsea, Manchester United, Tottenham Hotspur, Newcastle United, Aston Villa, West Ham United, Brighton & Hove Albion, Crystal Palace, Brentford, Fulham, Bournemouth, Wolverhampton Wanderers, Everton, Nottingham Forest, Luton Town, Burnley, Sheffield United',
+    'Championship': 'Leicester City, Southampton, Leeds United, Ipswich Town, West Bromwich Albion, Sunderland, Hull City, Middlesbrough, Coventry City, Preston North End, Bristol City, Cardiff City, Millwall, Swansea City, Blackburn Rovers, Plymouth Argyle, Stoke City, Birmingham City, Huddersfield Town, Sheffield Wednesday, Queens Park Rangers, Watford, Rotherham United, Norwich City'
+  },
+  'Italy': {
+    'Serie A': 'Juventus, Inter Milan, AC Milan, Napoli, Roma, Lazio, Fiorentina, Atalanta, Torino, Monza, Bologna, Udinese, Sassuolo, Empoli, Salernitana, Lecce, Hellas Verona, Spezia, Cremonese, Sampdoria',
+    'Serie B': 'Parma, Genoa, Cagliari, Frosinone, Bari, Pisa, Reggina, Brescia, Cosenza, Modena, Ternana, Cittadella, Ascoli, Como, Perugia, Benevento, SPAL, Palermo, Venezia, Südtirol'
+  },
+  'Spain': {
+    'La Liga': 'Real Madrid, Barcelona, Atletico Madrid, Sevilla, Real Sociedad, Villarreal, Athletic Bilbao, Real Betis, Osasuna, Rayo Vallecano, Mallorca, Girona, Celta Vigo, Cadiz, Getafe, Valencia, Almeria, Valladolid, Espanyol, Elche',
+    'Segunda División': 'Levante, Eibar, Alaves, Granada, Las Palmas, Sporting Gijon, Real Oviedo, Real Zaragoza, Cartagena, Tenerife, Burgos, Racing Santander, Huesca, Mirandes, Lugo, Ponferradina, Malaga, Ibiza, Leganes, Andorra, Albacete, Villarreal B'
+  },
+  'Germany': {
+    'Bundesliga': 'Bayern Munich, Borussia Dortmund, RB Leipzig, Bayer Leverkusen, Eintracht Frankfurt, VfB Stuttgart, Borussia Mönchengladbach, VfL Wolfsburg, SC Freiburg, TSG Hoffenheim, 1. FC Union Berlin, 1. FC Köln, Mainz 05, Werder Bremen, Augsburg, Hertha BSC, Schalke 04, VfL Bochum',
+    '2. Bundesliga': 'Hamburger SV, SV Darmstadt 98, 1. FC Heidenheim, Fortuna Düsseldorf, St. Pauli, Paderborn 07, Holstein Kiel, 1. FC Nürnberg, Hannover 96, Karlsruher SC, Greuther Fürth, Hansa Rostock, 1. FC Magdeburg, Jahn Regensburg, Eintracht Braunschweig, 1. FC Kaiserslautern, SV Sandhausen, Arminia Bielefeld'
+  },
+  'France': {
+    'Ligue 1': 'Paris Saint-Germain, Olympique Marseille, Olympique Lyon, AS Monaco, Lille, Nice, Lens, Rennes, Strasbourg, Montpellier, Brest, Nantes, Toulouse, Reims, Lorient, Clermont Foot, Troyes, Ajaccio',
+    'Ligue 2': 'Saint-Étienne, Auxerre, Sochaux, Bordeaux, Metz, Bastia, Caen, Le Havre, Nîmes, Dijon, Grenoble, Rodez, Quevilly-Rouen, Laval, Valenciennes, Niort, Pau, Annecy, Guingamp, Amiens'
+  },
+  'Portugal': {
+    'Primeira Liga': 'Benfica, Porto, Sporting CP, Braga, Vitória Guimarães, Boavista, Gil Vicente, Famalicão, Santa Clara, Estoril, Marítimo, Paços de Ferreira, Portimonense, Vizela, Chaves, Arouca, Rio Ave, Casa Pia',
+    'Liga Portugal 2': 'Moreirense, Farense, Estrela Amadora, Académico Viseu, Feirense, Penafiel, Leixões, Mafra, Tondela, Oliveirense, Belenenses SAD, Trofense, Covilhã, Nacional, Benfica B, Porto B, Sporting B, Vilafranquense'
+  },
+  'Netherlands': {
+    'Eredivisie': 'Ajax, PSV Eindhoven, Feyenoord, AZ Alkmaar, Twente, Sparta Rotterdam, Utrecht, Heerenveen, Go Ahead Eagles, NEC Nijmegen, Fortuna Sittard, Groningen, Cambuur, Vitesse, Excelsior, Emmen, Volendam, RKC Waalwijk',
+    'Eerste Divisie': 'PEC Zwolle, Heracles Almelo, Willem II, NAC Breda, MVV Maastricht, VVV-Venlo, FC Eindhoven, Telstar, Den Bosch, De Graafschap, Jong Ajax, Jong AZ, Jong PSV, Jong Utrecht, Dordrecht, ADO Den Haag, TOP Oss, Helmond Sport, Roda JC, Almere City'
+  },
+  'Belgium': {
+    'Pro League': 'Club Brugge, Union Saint-Gilloise, Antwerp, Genk, Anderlecht, Gent, Charleroi, Mechelen, Standard Liège, Sint-Truiden, Cercle Brugge, OH Leuven, Oostende, Kortrijk, Zulte Waregem, Seraing, Eupen, Westerlo',
+    'Challenger Pro League': 'RWDM, Waasland-Beveren, Beerschot, Lierse Kempenzonen, Lommel, Deinze, Virton, Dender EH, Club NXT, Jong Genk, SL16 FC, Excelsior Molenbeek'
+  },
+  'Turkey': {
+    'Süper Lig': 'Galatasaray, Fenerbahçe, Beşiktaş, Başakşehir, Trabzonspor, Bursaspor, Adana Demirspor, Konyaspor, Kayserispor, Gaziantep, Fatih Karagümrük, Ümraniyespor, İstanbulspor, Giresunspor, Kasımpaşa, Hatayspor, Sivasspor, Alanyaspor, Antalyaspor',
+    'TFF 1. Lig': 'Samsunspor, Rizespor, Pendikspor, Keçiörengücü, Bodrumspor, Eyüpspor, Sakaryaspor, Manisa FK, Bandırmaspor, Boluspor, Altay, Erzurumspor, Altınordu, Gençlerbirliği, Denizlispor, Tuzlaspor, Adanaspor, Yeni Malatyaspor, Göztepe'
+  },
+  'Scotland': {
+    'Scottish Premiership': 'Celtic, Rangers, Hearts, Hibernian, Aberdeen, St. Mirren, Kilmarnock, St. Johnstone, Motherwell, Livingston, Ross County, Dundee United',
+    'Scottish Championship': 'Dundee, Inverness Caledonian Thistle, Partick Thistle, Ayr United, Greenock Morton, Queen’s Park, Arbroath, Cove Rangers, Hamilton Academical, Raith Rovers'
+  },
+  'Austria': {
+    'Austrian Bundesliga': 'Red Bull Salzburg, Sturm Graz, LASK, Rapid Wien, Austria Wien, Wolfsberger AC, Austria Klagenfurt, WSG Tirol, Hartberg, Ried, Altach, Austria Lustenau',
+    '2. Liga': 'Blau-Weiß Linz, Grazer AK, St. Pölten, Horn, Amstetten, First Vienna, Lafnitz, Liefering, Admira Wacker, Dornbirn, Sturm Graz II, Floridsdorfer AC, Kapfenberg, Vorwärts Steyr, Rapid Wien II, SKU Amstetten'
+  },
+  'Denmark': {
+    'Superliga': 'Copenhagen, Nordsjælland, Viborg, Aarhus, Randers, Brøndby, Silkeborg, Midtjylland, OB, Horsens, Lyngby, AaB',
+    '1st Division': 'Vejle, Hvidovre, SønderjyskE, Vendsyssel, Fredericia, HB Køge, Hillerød, Næstved, Nykøbing, Fremad Amager, Hobro, Helsingør'
+  },
+  'Switzerland': {
+    'Swiss Super League': 'Young Boys, Basel, Zürich, Servette, Lugano, St. Gallen, Grasshopper, Luzern, Sion, Winterthur',
+    'Challenge League': 'Lausanne-Sport, Yverdon-Sport, Wil, Aarau, Vaduz, Schaffhausen, Thun, Stade Lausanne-Ouchy, Bellinzona, Neuchâtel Xamax'
+  },
+  'Greece': {
+    'Super League Greece': 'Olympiacos, PAOK, AEK Athens, Panathinaikos, Aris, OFI, Asteras Tripolis, PAS Giannina, Atromitos, Lamia, Levadiakos, Ionikos, Panetolikos, Volos',
+    'Super League 2': 'Kifisia, Kallithea, Apollon Smyrnis, Chania, Episkopi, Ilioupoli, Egaleo, Proodeftiki, Diagoras, Panachaiki, Olympiacos B, PAOK B, AEK B, Panathinaikos B'
+  },
+  'Czech Republic': {
+    'Czech First League': 'Sparta Prague, Slavia Prague, Viktoria Plzeň, Bohemians 1905, Slovacko, Sigma Olomouc, Baník Ostrava, Hradec Králové, Mladá Boleslav, České Budějovice, Jablonec, Pardubice, Zbrojovka Brno, Teplice, Liberec, Fastav Zlín',
+    'Czech National Football League': 'Vyškov, Karviná, Líšeň, Táborsko, Chrudim, Dukla Prague, Sigma Olomouc B, Prostějov, Příbram, Varnsdorf, Vlašim, Třinec, Slavia Prague B, Sparta Prague B, Opava, Viktoria Žižkov'
+  },
+  'Norway': {
+    'Eliteserien': 'Bodø/Glimt, Molde, Rosenborg, Lillestrøm, Vålerenga, Viking, Strømsgodset, Haugesund, Tromsø, Sandefjord, Sarpsborg 08, Aalesund, Jerv, HamKam, Odd, Kristiansund',
+    'OBOS-ligaen': 'Brann, Stabæk, Start, KFUM Oslo, Sandnes Ulf, Kongsvinger, Sogndal, Ranheim, Mjøndalen, Fredrikstad, Skeid, Bryne, Raufoss, Åsane, Grorud, Stjørdals-Blink'
+  },
+  'Sweden': {
+    'Allsvenskan': 'Häcken, Djurgården, Hammarby, Kalmar, AIK, Elfsborg, Malmö FF, IFK Göteborg, Norrköping, Sirius, Värnamo, Mjällby, Varberg, Helsingborg, Degerfors, Sundsvall',
+    'Superettan': 'Halmstad, Brommapojkarna, Öster, Landskrona, Trelleborg, AFC Eskilstuna, Västerås SK, Örebro, Skövde AIK, Jönköpings Södra, Norrby, Utsikten, Örgryte, Brage, Dalkurd, Östersund'
+  },
+  'Poland': {
+    'Ekstraklasa': 'Lech Poznań, Raków Częstochowa, Legia Warsaw, Pogoń Szczecin, Lechia Gdańsk, Wisła Płock, Radomiak Radom, Górnik Zabrze, Cracovia, Śląsk Wrocław, Jagiellonia Białystok, Zagłębie Lubin, Widzew Łódź, Stal Mielec, Korona Kielce, Warta Poznań, Piast Gliwice, Miedź Legnica',
+    'I Liga': 'Wisła Kraków, Arka Gdynia, ŁKS Łódź, Chrobry Głogów, Puszcza Niepołomice, Bruk-Bet Termalica Nieciecza, Podbeskidzie Bielsko-Biała, Resovia, Tychy, Skra Częstochowa, Sandecja Nowy Sącz, Odra Opole, Górnik Łęczna, Katowice, Zagłębie Sosnowiec, Stomil Olsztyn, Chojniczanka Chojnice, Ruch Chorzów'
+  },
+  'Romania': {
+    'Liga 1': 'FCSB, CFR Cluj, Universitatea Craiova, Rapid București, Sepsi OSK, Farul Constanța, Petrolul Ploiești, UTA Arad, Voluntari, Botoșani, Chindia Târgoviște, Mioveni, Universitatea Cluj, Hermannstadt, Oțelul Galați, Dinamo București',
+    'Liga 2': 'Politehnica Iași, Steaua București, Unirea Slobozia, Gloria Buzău, Concordia Chiajna, Brașov, Unirea Dej, Ripensia Timișoara, Progresul Spartac, Metaloglobus București, Viitorul Pandurii Târgu Jiu, CSM Slatina, Poli Timișoara, Dumbrăvița, Minaur Baia Mare, Unirea Constanța, FK Miercurea Ciuc, Șelimbăr, Reșița'
+  },
+  'Croatia': {
+    'HNL': 'Dinamo Zagreb, Hajduk Split, Osijek, Rijeka, Lokomotiva, Varaždin, Istra 1961, Slaven Belupo, Gorica, Šibenik',
+    'Prva NL': 'Rudeš, Cibalia, Vukovar 1991, Solin, Dubrava, Jarun, Orijent 1919, Croatia Zmijavci, Dugopolje, Kustošija, BSK Bijelo Brdo, Hrvatski Dragovoljac'
+  },
+  'Serbia': {
+    'SuperLiga': 'Red Star Belgrade, Partizan, Čukarički, Vojvodina, TSC Bačka Topola, Voždovac, Radnički Niš, Mladost Lučani, Spartak Subotica, Kolubara, Radnik Surdulica, Napredak Kruševac, Javor Ivanjica, Novi Pazar, Radnički 1923, Mladost GAT',
+    'Prva Liga': 'Grafičar, IMT, Železničar Pančevo, Novi Sad 1921, Radnički Sremska Mitrovica, Inđija, Jedinstvo Ub, Sloboda Užice, Trayal Kruševac, Rad, Mačva Šabac, Loznica, Zlatibor Čajetina, OFK Vršac, Metalac Gornji Milanovac, Zvezdara'
+  },
+  'Hungary': {
+    'NB I': 'Ferencváros, Kisvárda, Puskás Akadémia, Debrecen, Zalaegerszeg, Fehérvár, Mezőkövesd, Újpest, Paks, Honvéd, Kecskemét, Vasas',
+    'NB II': 'Diósgyőr, MTK Budapest, Győr, Szeged-Csanád, Szentlőrinc, Csákvár, Tiszakécske, Kazincbarcika, Gyirmót, Nyíregyháza, Békéscsaba, Soroksár, Siófok, Haladás, Eger, Budafok, Pécs, Ajka, Kozármisleny, Dorog'
+  },
+  'Bulgaria': {
+    'First Professional Football League': 'Ludogorets Razgrad, CSKA Sofia, CSKA 1948, Levski Sofia, Cherno More, Lokomotiv Plovdiv, Slavia Sofia, Arda Kardzhali, Botev Plovdiv, Beroe, Pirin Blagoevgrad, Hebar Pazardzhik, Septemvri Sofia, Lokomotiv Sofia, Botev Vratsa, Spartak Varna',
+    'Second League': 'Etar Veliko Tarnovo, Sportist Svoge, Belasitsa Petrich, Montana, Strumska Slava, Maritsa Plovdiv, Dunav Ruse, Litex Lovech, Spartak Pleven, Yantra Gabrovo, Minyor Pernik, Dobrudzha Dobrich, Ludogorets II, Sozopol, Vitosha Bistritsa, Bdin Vidin, Krumovgrad, CSKA 1948 II'
+  },
+  'Slovakia': {
+    'Slovak Super Liga': 'Slovan Bratislava, DAC Dunajská Streda, Spartak Trnava, Ružomberok, Žilina, Podbrezová, Trenčín, Banská Bystrica, Zemplín Michalovce, Skalica, ViOn Zlaté Moravce, Tatran Liptovský Mikuláš',
+    '2. Liga': 'Košice, Tatran Prešov, Komárno, Banská Bystrica II, Slavoj Trebišov, Humenné, Púchov, Šamorín, Petržalka, Žilina II, Dubnica, Slovan Bratislava II, Pohronie, Dolný Kubín, Rača, Futura Humenné'
+  },
+  'Slovenia': {
+    'PrvaLiga': 'Maribor, Celje, Olimpija Ljubljana, Mura, Koper, Bravo, Radomlje, Domžale, Tabor Sežana, Gorica',
+    '2. SNL': 'Rogaška, Aluminij, Krka, Ilirija 1911, Bistrica, Fužinar, Brinje Grosuplje, Triglav Kranj, Nafta, Primorje, Beltinci, Bilje, Dekani, Dob, Krško, Vitanest Bilje'
+  },
+  'Cyprus': {
+    'Cypriot First Division': 'APOEL, AEK Larnaca, Apollon Limassol, Omonia Nicosia, Aris Limassol, Pafos FC, Anorthosis Famagusta, Nea Salamina, Karmiotissa, Enosis Neon Paralimni, Akritas Chlorakas, Olympiakos Nicosia, Doxa Katokopias, AEL Limassol',
+    'Cypriot Second Division': 'Othellos Athienou, Ethnikos Achna, Achyronas-Onisilos, Ermis Aradippou, Xylotympou, PAEEK, Alki Oroklini, MEAP Nisou, Ayia Napa, Anagennisi Deryneia, Omonia Aradippou, Digenis Akritas Morphou, PO Achyronas Liopetriou, Krasava Eny Ypsonas, Olympias Lympion, Peyia 2014'
+  },
+  'Israel': {
+    'Israeli Premier League': 'Maccabi Haifa, Hapoel Be’er Sheva, Maccabi Tel Aviv, Hapoel Jerusalem, Maccabi Netanya, Ashdod, Beitar Jerusalem, Hapoel Hadera, Ironi Kiryat Shmona, Bnei Sakhnin, Hapoel Tel Aviv, Hapoel Haifa, Sektzia Ness Ziona, Ironi Tiberias',
+    'Liga Leumit': 'Hapoel Petah Tikva, Hapoel Kfar Saba, Bnei Yehuda, Hapoel Acre, Maccabi Petah Tikva, Hapoel Nof HaGalil, Ironi Ramat HaSharon, Maccabi Ahi Nazareth, Hapoel Afula, Hapoel Ramat Gan, Kafr Qasim, Hapoel Rishon LeZion, Maccabi Kabilio Jaffa, Hapoel Umm al-Fahm, Agudat Sport Ashdod, Hapoel Ashdod'
+  },
+  'Azerbaijan': {
+    'Azerbaijan Premier League': 'Qarabağ, Neftçi, Zira, Sabah, Gabala, Sumgayit, Kapaz, Turan Tovuz, Shamakhi, Sabail',
+    'First Division': 'Araz-Naxçıvan, Zaqatala, MOIK Baku, Mingachevir, Imishli, Qaradag Lokbatan, Energetik Mingachevir, Difai Agsu, Shamkir, Qarabağ II, Neftçi II, Sumgayit II, Zira II, Gabala II, Sabah II, Turan Tovuz II'
+  },
+  'Finland': {
+    'Veikkausliiga': 'HJK, KuPS, Honka, Haka, Ilves, SJK, Inter Turku, Oulu, VPS, Lahti, Mariehamn, KTP',
+    'Ykkönen': 'TPS, KPV, EIF, Gnistan, MP, JäPS, PK-35, Jaro, PEPO, PIF, SJK Akatemia, KäPa'
+  },
+  'Ireland': {
+    'League of Ireland Premier Division': 'Shamrock Rovers, Derry City, Dundalk, St Patrick’s Athletic, Sligo Rovers, Shelbourne, Bohemians, Drogheda United, Finn Harps, UCD',
+    'First Division': 'Cork City, Galway United, Longford Town, Treaty United, Waterford, Wexford, Bray Wanderers, Athlone Town, Cobh Ramblers'
+  }
+};
+
+function ensureLeague(country: string, league: string, size: number) {
+  LEAGUES[country] = LEAGUES[country] || [];
+  if (!LEAGUES[country].some(l => l.name === league)) {
+    const tier = LEAGUES[country].length; // 0 = top
+    const countryCoef =  (country in (globalThis as any)) ? 50 : 50; // fallback
+    const base = tier === 0 ? 100_000_000 : 20_000_000;
+    LEAGUES[country].push({ name: league, size, budget: base });
+  }
+}
+
+function genStrengthBudget(country: string, league: string, name: string, i: number, n: number): { strength: number; budget: number } {
+  const tier = LEAGUES[country]?.findIndex(l => l.name === league) ?? 0;
+  const leagueInfo = LEAGUES[country]?.find(l => l.name === league);
+  const leagueBudget = leagueInfo?.budget ?? (tier === 0 ? 100_000_000 : 20_000_000);
+  const max = tier === 0 ? 95 : 82;
+  const min = tier === 0 ? 66 : 60;
+  let strength = Math.round(max - (max - min) * (i / Math.max(1, n - 1)));
+  const eliteBoost = new Set(['Real Madrid','Barcelona','Atletico Madrid','Bayern Munich','Borussia Dortmund','RB Leipzig','Juventus','Inter Milan','AC Milan','Napoli','Paris Saint-Germain','Liverpool','Manchester City','Arsenal','Chelsea','Manchester United','Ajax','PSV Eindhoven','Feyenoord','Benfica','Porto','Sporting CP']);
+  if (eliteBoost.has(name)) strength = Math.min(96, strength + 4);
+  if (country === 'Romania' && (name.toLowerCase().includes('rapid') || name.toLowerCase().includes('fcsb'))) strength = 80;
+  const rel = (strength - min) / (max - min);
+  const budget = Math.round(leagueBudget * (0.6 + 1.8 * rel));
+  return { strength, budget };
+}
+
+(function mergeTeamLists() {
+  for (const [country, leagues] of Object.entries(TEAM_LISTS_2025_26)) {
+    for (const [league, list] of Object.entries(leagues)) {
+      const teams = split(list);
+      ensureLeague(country, league, teams.length);
+      CLUBS[country] = CLUBS[country] || [];
+      const existingNames = new Set(CLUBS[country].map(c => c.club));
+      teams.forEach((name, i) => {
+        if (!existingNames.has(name)) {
+          const { strength, budget } = genStrengthBudget(country, league, name, i, teams.length);
+          CLUBS[country].push({ club: name, strength, league, budget });
+        }
+      });
+    }
+  }
+})();
+
 // European competitions
 export const EUROPEAN_COMP = [
   {'name': "Champions League", 'prestige': 99},
