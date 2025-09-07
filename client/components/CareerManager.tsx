@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import BallDraw from './BallDraw';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import {
@@ -45,6 +46,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     topXILeague?: { position: string, club: string }[],
     topXIGlobal?: { position: string, club: string, country: string }[]
   } | null>(null);
+  const [standingsKey, setStandingsKey] = useState<string | null>(null);
 
   const [offerOpen, setOfferOpen] = useState(false);
   const [pendingOffer, setPendingOffer] = useState<{
@@ -57,6 +59,14 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
   }, [currentPlayer, onPlayerUpdate]);
+
+  // Initialize selected standings key when results change
+  useEffect(() => {
+    if (seasonResults?.standings) {
+      const keys = Object.keys(seasonResults.standings);
+      if (keys.length) setStandingsKey(prev => prev && keys.includes(prev) ? prev : keys[0]);
+    }
+  }, [seasonResults?.standings]);
 
   // Auto-sign with a club in Season 1 (like the Python flow)
   useEffect(() => {
@@ -639,17 +649,33 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
               <Card>
                 <CardHeader>
-                  <CardTitle>Global League Standings (Top 5)</CardTitle>
+                  <CardTitle>League Standings (Top 5)</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    {seasonResults.standings && Object.entries(seasonResults.standings).map(([key, table]) => (
-                      <div key={key}>
-                        <div className="font-semibold mb-1">{key}</div>
-                        {table.map((name, i) => (<div key={i}>{i+1}. {name}</div>))}
+                  {seasonResults.standings && (
+                    <div className="space-y-4">
+                      <div className="max-w-xs">
+                        <Select value={standingsKey ?? undefined} onValueChange={(v) => setStandingsKey(v)}>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select league" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {Object.keys(seasonResults.standings).map((k) => (
+                              <SelectItem key={k} value={k}>{k}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
                       </div>
-                    ))}
-                  </div>
+                      {standingsKey && seasonResults.standings[standingsKey] && (
+                        <div className="text-sm">
+                          <div className="font-semibold mb-2">{standingsKey}</div>
+                          {seasonResults.standings[standingsKey].map((name, i) => (
+                            <div key={i}>{i + 1}. {name}</div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </CardContent>
               </Card>
 
