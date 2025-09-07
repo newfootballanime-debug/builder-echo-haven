@@ -44,6 +44,13 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
     }
   }, [isVisible, title, balls]);
 
+  const handleContinue = () => {
+    if (finalResult && !completedRef.current) {
+      completedRef.current = true;
+      onComplete(finalResult);
+    }
+  };
+
   const startDraw = () => {
     setIsDrawing(true);
     setShowFinal(false);
@@ -216,15 +223,10 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                 <div className="text-2xl md:text-4xl font-bold text-yellow-400 bg-gradient-to-r from-yellow-300 to-yellow-500 bg-clip-text text-transparent break-words">
                   {finalResult}
                 </div>
-                <div className="sticky bottom-0 left-0 right-0 mt-2">
+                <div className="sticky bottom-0 left-0 right-0 mt-2 z-50 pointer-events-auto">
                   <div className="bg-blue-900/60 backdrop-blur-md rounded-xl p-2 border border-white/20" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))' }}>
                     <Button
-                      onClick={() => {
-                        if (finalResult && !completedRef.current) {
-                          completedRef.current = true;
-                          onComplete(finalResult);
-                        }
-                      }}
+                      onClick={handleContinue}
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 md:py-5 text-lg md:text-xl shadow-2xl rounded-2xl border-2 border-white/40"
                       size="lg"
                     >
