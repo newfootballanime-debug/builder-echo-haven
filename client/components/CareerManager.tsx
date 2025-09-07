@@ -11,10 +11,11 @@ import {
   Player, Club, CareerHistory, PlayerStats
 } from '@/lib/types';
 import { LEAGUES } from '@/lib/gameData';
-import { 
-  getLeague, getLeagueClubs, draftClub, isInFirstEleven, 
+import {
+  getLeague, getLeagueClubs, draftClub, isInFirstEleven,
   generateSeasonStats, calculateSalary, calculateMarketValue,
-  simulateCup, simulateEuropean, formatCurrency, randomInt
+  simulateCup, simulateEuropean, formatCurrency, randomInt,
+  getEuropeanSlots, getCountryRank, simulateGlobalWinners
 } from '@/lib/gameLogic';
 
 interface CareerManagerProps {
@@ -356,7 +357,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       career: [...currentPlayer.career, careerEntry]
     });
 
-    const countries = Object.keys(LEAGUES).slice(0, 6);
+    const countries = Object.keys(LEAGUES).slice(0, 12);
     const standings: Record<string, string[]> = {};
     countries.forEach(ct => {
       const topLeague = getLeague(0, ct);
@@ -364,23 +365,12 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         .sort((a,b)=> b.strength - a.strength)
         .slice(0,5)
         .map(c=>c.name);
-      standings[`${ct} • ${topLeague}`] = table;
+      const rank = getCountryRank(ct);
+      standings[`${ct} • ${topLeague} (Rank ${rank})`] = table;
     });
 
-    // Winners and Top XI
-    const globalWinners: Record<string, string> = (() => {
-      const winners: Record<string, string> = {};
-      let topPool: Club[] = [];
-      Object.keys(LEAGUES).forEach(ct => {
-        const tl = getLeague(0, ct);
-        topPool = topPool.concat(getLeagueClubs(ct, tl));
-      });
-      topPool.sort((a,b)=> b.strength - a.strength);
-      if (topPool[0]) winners['Champions League'] = topPool[0].name;
-      if (topPool[1]) winners['Europa League'] = topPool[1].name;
-      if (topPool[2]) winners['Conference League'] = topPool[2].name;
-      return winners;
-    })();
+    // Winners and coefficients update
+    const globalWinners: Record<string, string> = simulateGlobalWinners();
     // Build Top XI using league clubs deterministically
     const leagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
     const refClubs = leagueClubs.length
