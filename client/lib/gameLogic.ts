@@ -316,7 +316,7 @@ export function simulateLeagueStandings(country: string, league: string): Club[]
   const clubs = getLeagueClubs(country, league);
   const scored = clubs.map(c => ({
     club: c,
-    score: c.strength * (0.9 + Math.random() * 0.3) + randomInt(-5, 10)
+    score: c.strength * (0.95 + Math.random() * 0.15) + randomInt(-3, 6)
   }));
   scored.sort((a, b) => b.score - a.score);
   return scored.map(s => s.club);
@@ -324,6 +324,30 @@ export function simulateLeagueStandings(country: string, league: string): Club[]
 
 export function getAllCountries(): string[] {
   return Object.keys(LEAGUES);
+}
+
+export function getLeagueIndex(country: string, league: string): number {
+  const list = LEAGUES[country] || [];
+  return list.findIndex(l => l.name === league);
+}
+
+export function getClubByName(country: string, name: string): Club | null {
+  const clubs = CLUBS[country] || [];
+  const found = clubs.find(c => c.club === name);
+  return found ? { name: found.club, country, league: found.league, strength: found.strength, budget: found.budget, europeanComp: '' } : null;
+}
+
+export function getPromotionRelegationCounts(totalTeams: number): { promote: number; relegate: number } {
+  if (totalTeams >= 20) return { promote: 3, relegate: 3 };
+  if (totalTeams >= 18) return { promote: 3, relegate: 3 };
+  if (totalTeams >= 16) return { promote: 2, relegate: 2 };
+  return { promote: 1, relegate: 1 };
+}
+
+export function gaussianWeight(distance: number, sigma: number): number {
+  const w = Math.exp(- (distance * distance) / (2 * sigma * sigma));
+  // Scale to integer weights 1..100
+  return Math.max(1, Math.round(100 * w));
 }
 
 // --- UEFA coefficients (simplified) ---
