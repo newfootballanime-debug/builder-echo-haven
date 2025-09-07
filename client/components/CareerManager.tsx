@@ -28,7 +28,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const [currentPlayer, setCurrentPlayer] = useState<Player>(player);
   const [showDraw, setShowDraw] = useState(false);
   const [currentDraw, setCurrentDraw] = useState<{
-    type: 'evolution' | 'cup' | 'european',
+    type: 'evolution' | 'league' | 'cup' | 'european',
     balls: Record<string, number>,
     title: string,
     onComplete?: (result: string) => void
@@ -277,49 +277,102 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       updatePlayer({ club: currentClub.name });
     }
 
-    // Simulate league position
     const totalTeams = clubs.length || 20;
-    const leaguePosition = randomInt(1, totalTeams);
-    
-    // Show evolution draw with equal chances 5-10 (Python parity)
     const isStarter = isInFirstEleven(currentPlayer, currentClub);
-    const evolutionBalls = { '5': 1, '6': 1, '7': 1, '8': 1, '9': 1, '10': 1 };
 
+    // 1) Evolution draw
+    const evolutionBalls = { '5': 1, '6': 1, '7': 1, '8': 1, '9': 1, '10': 1 };
     setCurrentDraw({
       type: 'evolution',
       balls: evolutionBalls,
       title: 'Your Performance This Season',
       onComplete: (evolution) => {
         const evo = parseInt(evolution);
-        continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter);
+        // 2) League position draw weighted by club strength
+        const ranked = [...clubs].sort((a,b)=> b.strength - a.strength);
+        const expected = Math.max(1, ranked.findIndex(c=>c.name===currentClub.name)+1 || Math.ceil(totalTeams/2));
+        const leagueBalls: Record<string, number> = {};
+        for (let pos=1; pos<=totalTeams; pos++) {
+          const dist = Math.abs(pos - expected);
+          const base = Math.max(1, Math.round(18 - dist*2));
+          const starterBoost = isStarter ? Math.ceil(evo/3) : 0;
+          leagueBalls[String(pos)] = Math.max(1, base + starterBoost);
+        }
+        setCurrentDraw({
+          type: 'league',
+          balls: leagueBalls,
+          title: `League Position Draw (${currentPlayer.league})`,
+          onComplete: (posStr) => {
+            const leaguePosition = parseInt(posStr);
+            // 3) National Cup draw (phase)
+            const phases = ["16-imi","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+            const cupBalls: Record<string, number> = {};
+            phases.forEach((ph, i)=>{
+              const w = Math.max(1, Math.round(6 - i + (currentClub.strength-70)/10));
+              cupBalls[ph] = w;
+            });
+            setCurrentDraw({
+              type: 'cup',
+              balls: cupBalls,
+              title: 'National Cup Draw',
+              onComplete: (cupPhase) => {
+                const slots = getEuropeanSlots(currentPlayer.country);
+                let competition: 'Champions League' | 'Europa League' | 'Conference League' | null = null;
+                if (currentPlayer.league === getLeague(0, currentPlayer.country)) {
+                  if (leaguePosition <= slots.ucl) competition = 'Champions League';
+                  else if (leaguePosition <= slots.ucl + slots.uel) competition = 'Europa League';
+                  else if (leaguePosition <= slots.ucl + slots.uel + slots.uecl) competition = 'Conference League';
+                }
+                if (competition) {
+                  const euroPhases = ["Preliminarii","Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+                  const euroBalls: Record<string, number> = {};
+                  euroPhases.forEach((ph, i)=>{
+                    const base = competition==='Champions League'?6: competition==='Europa League'?5:4;
+                    euroBalls[ph] = Math.max(1, Math.round(base - i + (currentClub.strength-70)/8));
+                  });
+                  setCurrentDraw({
+                    type: 'european',
+                    balls: euroBalls,
+                    title: `${competition} Draw`,
+                    onComplete: (euroPhase)=>{
+                      continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter, cupPhase, competition!, euroPhase);
+                    }
+                  });
+                  setShowDraw(true);
+                } else {
+                  continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter, cupPhase, null, null);
+                }
+              }
+            });
+            setShowDraw(true);
+          }
+        });
+        setShowDraw(true);
       }
     });
     setShowDraw(true);
   };
 
   const continueSeasonSimulation = (
-    club: Club, 
-    position: number, 
-    totalTeams: number, 
+    club: Club,
+    position: number,
+    totalTeams: number,
     evolution: number,
-    isStarter: boolean
+    isStarter: boolean,
+    cupPhase?: string | null,
+    euroComp?: 'Champions League' | 'Europa League' | 'Conference League' | null,
+    euroPhase?: string | null
   ) => {
     // Generate stats
     const stats = generateSeasonStats(currentPlayer, club, isStarter, evolution);
     
-    // Simulate cup
-    const cupResult = simulateCup(club, currentPlayer.country);
-    
-    // Simulate European competition by UEFA slots (simplified)
-    let europeanResult = null;
-    if (currentPlayer.league === getLeague(0, currentPlayer.country)) {
-      const slots = getEuropeanSlots(currentPlayer.country);
-      const place = position;
-      let competition: 'Champions League' | 'Europa League' | 'Conference League' | null = null;
-      if (place <= slots.ucl) competition = 'Champions League';
-      else if (place <= slots.ucl + slots.uel) competition = 'Europa League';
-      else if (place <= slots.ucl + slots.uel + slots.uecl) competition = 'Conference League';
-      if (competition) europeanResult = simulateEuropean(club, competition);
+    // Cup result (from draw if provided)
+    const cupResult = cupPhase ? { phase: cupPhase, details: [] as string[] } : simulateCup(club, currentPlayer.country);
+
+    // European result (from draw if provided)
+    let europeanResult = null as null | { phase: string, details: string[], prize: number };
+    if (euroComp && euroPhase) {
+      europeanResult = { phase: euroPhase, details: [], prize: 0 };
     }
 
     // Calculate trophies
@@ -357,7 +410,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       career: [...currentPlayer.career, careerEntry]
     });
 
-    const countries = Object.keys(LEAGUES).slice(0, 12);
+    const countries = Object.keys(LEAGUES);
     const standings: Record<string, string[]> = {};
     countries.forEach(ct => {
       const topLeague = getLeague(0, ct);
