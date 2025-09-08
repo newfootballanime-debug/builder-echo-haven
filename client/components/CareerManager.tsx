@@ -55,11 +55,12 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const [offerOpen, setOfferOpen] = useState(false);
   const nextDrawQueued = useRef(false);
   const [pendingOffer, setPendingOffer] = useState<{
-    type: 'external' | 'domestic' | 'loan',
+    type: 'external' | 'domestic' | 'loan' | 'renewal' | 'signing',
     club: Club,
     salary: number,
     contractYears: number
   } | null>(null);
+  const [transferAttemptsLeft, setTransferAttemptsLeft] = useState<number>(3);
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
