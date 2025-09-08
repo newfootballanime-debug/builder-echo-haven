@@ -947,19 +947,22 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   {seasonInProgress ? '⏳ Simulating...' : '▶️ New Season'}
                 </Button>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <Button variant="outline" onClick={requestExternalTransfer} disabled={seasonInProgress}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
+                  <Button variant="outline" onClick={requestExternalTransfer} disabled={seasonInProgress || transferAttemptsLeft<=0}>
                     🔄 Request Transfer (Abroad)
                   </Button>
                   <Button variant="outline" onClick={requestNewContract} disabled={seasonInProgress}>
                     📝 Renegotiate Contract
                   </Button>
-                  <Button variant="outline" onClick={requestLoan} disabled={seasonInProgress}>
+                  <Button variant="outline" onClick={requestLoan} disabled={seasonInProgress || transferAttemptsLeft<=0}>
                     🏃 Request Loan
                   </Button>
-                  <Button variant="outline" onClick={requestDomesticTransfer} disabled={seasonInProgress}>
-                    🏠 Domestic Transfer
-                  </Button>
+                  <div className="flex items-center justify-between">
+                    <Button variant="outline" onClick={requestDomesticTransfer} disabled={seasonInProgress || transferAttemptsLeft<=0}>
+                      🏠 Domestic Transfer
+                    </Button>
+                    <span className="text-xs text-gray-500">Attempts left: {transferAttemptsLeft}</span>
+                  </div>
                 </div>
 
                 <p className="text-sm text-gray-500 text-center">
