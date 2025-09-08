@@ -116,17 +116,26 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const acceptOffer = () => {
     if (!pendingOffer) return;
     const c = pendingOffer.club;
-    const updates: Partial<Player> = {
-      club: c.name,
-      league: c.league,
-      country: c.country,
-      salary: pendingOffer.salary,
-      contractYears: pendingOffer.type === 'loan' ? Math.max(1, currentPlayer.contractYears) : pendingOffer.contractYears,
-      isOnLoan: pendingOffer.type === 'loan'
-    };
+    let updates: Partial<Player>;
+    if (pendingOffer.type === 'renewal') {
+      updates = {
+        salary: pendingOffer.salary,
+        contractYears: Math.max(2, currentPlayer.contractYears + 1),
+      };
+    } else {
+      updates = {
+        club: c.name,
+        league: c.league,
+        country: c.country,
+        salary: pendingOffer.salary,
+        contractYears: pendingOffer.type === 'loan' ? Math.max(1, currentPlayer.contractYears) : pendingOffer.contractYears,
+        isOnLoan: pendingOffer.type === 'loan'
+      };
+    }
     updatePlayer(updates);
     setOfferOpen(false);
     setPendingOffer(null);
+    if (pendingOffer.type === 'signing') setSeasonInProgress(true);
   };
 
   const requestDomesticTransfer = () => {
