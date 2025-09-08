@@ -907,8 +907,16 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                       </div>
                     </div>
                     <div>
-                      <div className="font-semibold mb-1">Global Top XI</div>
-                      {seasonResults.topXIGlobal?.map((p, i) => (<div key={i}>{p.position}: {p.club} ({p.country})</div>))}
+                      <div className="font-semibold mb-2">Global Top XI</div>
+                      <div className="space-y-1">
+                        {seasonResults.topXIGlobal?.map((p, i) => (
+                          <div key={i} className="flex justify-between">
+                            <span>{p.position}</span>
+                            <span className="font-medium">{p.player}</span>
+                            <span className="text-gray-600">{p.club} ({p.country})</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
