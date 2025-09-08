@@ -607,6 +607,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     }
 
     const transfers = simulateTransfers(currentPlayer.country, currentPlayer.league, currentPlayer.club);
+    applyTransfersToAdjustments(currentPlayer.country, transfers);
 
     setSeasonResults({
       league: { position, total: totalTeams },
