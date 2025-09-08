@@ -1048,6 +1048,19 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 <p className="text-sm text-gray-500 text-center">
                   Actions apply instantly and affect next season simulation
                 </p>
+                <div className="text-center">
+                  <Button onClick={() => {
+                    try {
+                      const payload = {
+                        player: currentPlayer,
+                        meta: { clubStrengthDelta, clubBudgetDelta, clubLeagueOverride }
+                      };
+                      localStorage.setItem('careerSaveV1', JSON.stringify(payload));
+                    } catch {}
+                  }}>
+                    💾 Save Career
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
