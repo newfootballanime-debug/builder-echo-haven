@@ -668,7 +668,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <CardTitle className="text-xl md:text-2xl font-bold text-green-800">
-                  ⚽ {currentPlayer.name}
+                  ��� {currentPlayer.name}
                 </CardTitle>
                 <p className="text-green-600 text-sm md:text-base">
                   {currentPlayer.position} • {currentPlayer.age} years old • Rating: {currentPlayer.rating}
@@ -977,7 +977,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       <AlertDialog open={offerOpen} onOpenChange={setOfferOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Transfer Offer</AlertDialogTitle>
+            <AlertDialogTitle>{pendingOffer?.type === 'renewal' ? 'Contract Renewal' : pendingOffer?.type === 'signing' ? 'Signing Offer' : 'Transfer Offer'}</AlertDialogTitle>
             <AlertDialogDescription>
               {pendingOffer ? (
                 <div className="space-y-2">
