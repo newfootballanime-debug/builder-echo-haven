@@ -522,25 +522,32 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
     // Winners and coefficients update
     const globalWinners: Record<string, string> = simulateGlobalWinners();
-    // Build Top XI using league clubs deterministically
+    // Build Top XI with generated player names (biased by club country)
     const leagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
     const refClubs = leagueClubs.length
-      ? leagueClubs
-      : getLeagueClubs(currentPlayer.country, getLeague(0, currentPlayer.country));
+      ? leagueClubs.sort((a,b)=> b.strength - a.strength)
+      : getLeagueClubs(currentPlayer.country, getLeague(0, currentPlayer.country)).sort((a,b)=> b.strength - a.strength);
+    const order = ['GK','RB','CB','CB','LB','CDM','CM','CAM','RW','LW','ST'];
     const safeLen = Math.max(1, refClubs.length);
-    const topXILeague = [
-      { position: 'GK',  club: refClubs[0 % safeLen]?.name || '-' },
-      { position: 'RB',  club: refClubs[1 % safeLen]?.name || '-' },
-      { position: 'CB',  club: refClubs[2 % safeLen]?.name || '-' },
-      { position: 'CB',  club: refClubs[3 % safeLen]?.name || '-' },
-      { position: 'LB',  club: refClubs[4 % safeLen]?.name || '-' },
-      { position: 'CDM', club: refClubs[0 % safeLen]?.name || '-' },
-      { position: 'CM',  club: refClubs[1 % safeLen]?.name || '-' },
-      { position: 'CAM', club: refClubs[2 % safeLen]?.name || '-' },
-      { position: 'RW',  club: refClubs[3 % safeLen]?.name || '-' },
-      { position: 'LW',  club: refClubs[4 % safeLen]?.name || '-' },
-      { position: 'ST',  club: refClubs[0 % safeLen]?.name || '-' },
-    ];
+    const topXILeague = order.map((pos, i) => {
+      const club = refClubs[i % safeLen];
+      const playerName = generatePlayerName(club?.country);
+      return { position: pos, player: playerName, club: club?.name || '-' };
+    });
+
+    // Global Top XI from best clubs across countries
+    const bestClubs: Club[] = [];
+    Object.keys(LEAGUES).forEach(ct => {
+      const topL = getLeague(0, ct);
+      const cs = getLeagueClubs(ct, topL);
+      if (cs.length) bestClubs.push(cs.reduce((a,b)=> (b.strength>a.strength?b:a)));
+    });
+    bestClubs.sort((a,b)=> b.strength - a.strength);
+    const topXIGlobal = order.map((pos, i) => {
+      const club = bestClubs[i % Math.max(1, bestClubs.length)];
+      const playerName = generatePlayerName(club?.country);
+      return { position: pos, player: playerName, club: club?.name || '-', country: club?.country || '-' };
+    });
 
     // Promotion/Relegation league change for player next season
     const leagueIdx = getLeagueIndex(currentPlayer.country, currentPlayer.league);
