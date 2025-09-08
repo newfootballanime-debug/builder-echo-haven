@@ -895,8 +895,16 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 <CardContent>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
                     <div>
-                      <div className="font-semibold mb-1">League Top XI</div>
-                      {seasonResults.topXILeague?.map((p, i) => (<div key={i}>{p.position}: {p.club}</div>))}
+                      <div className="font-semibold mb-2">League Top XI</div>
+                      <div className="space-y-1">
+                        {seasonResults.topXILeague?.map((p, i) => (
+                          <div key={i} className="flex justify-between">
+                            <span>{p.position}</span>
+                            <span className="font-medium">{p.player}</span>
+                            <span className="text-gray-600">{p.club}</span>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <div className="font-semibold mb-1">Global Top XI</div>
