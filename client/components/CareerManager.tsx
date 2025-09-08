@@ -16,7 +16,8 @@ import {
   generateSeasonStats, calculateSalary, calculateMarketValue,
   simulateCup, simulateEuropean, formatCurrency, randomInt,
   getEuropeanSlots, getCountryRank, simulateGlobalWinners,
-  gaussianWeight, getPromotionRelegationCounts, getLeagueIndex
+  gaussianWeight, getPromotionRelegationCounts, getLeagueIndex,
+  generateRandomName
 } from '@/lib/gameLogic';
 
 interface CareerManagerProps {
@@ -46,7 +47,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     globalWinners?: Record<string, string>,
     standings?: Record<string, string[]>,
     topXILeague?: { position: string, club: string }[],
-    topXIGlobal?: { position: string, club: string, country: string }[]
+    topXIGlobal?: { position: string, club: string, country: string }[],
+    transfers?: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[]
   } | null>(null);
   const [standingsKey, setStandingsKey] = useState<string | null>(null);
 
@@ -249,6 +251,59 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     }
   };
 
+  // Player impact on team strength and transfer helpers
+  const effectiveStrength = (club: Club, player: Player, isStarter: boolean, evolution: number): number => {
+    let boost = 0;
+    if (isStarter) {
+      boost += Math.max(0, player.rating - club.strength) * 0.3;
+      boost += Math.max(0, evolution - 6) * 0.8;
+    }
+    return Math.min(99, Math.round(club.strength + boost));
+  };
+
+  const generateClubPlayerName = (country: string) => {
+    return generateRandomName(Math.random() < 0.7 ? country : undefined);
+  };
+
+  const simulateTransfers = (country: string, currentLeague: string, currentClubName: string): { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[] => {
+    const l1 = getLeague(0, country);
+    const l2 = getLeague(1, country);
+    const pool: Club[] = [
+      ...getLeagueClubs(country, l1),
+      ...(l2 ? getLeagueClubs(country, l2) : [])
+    ];
+    const transfers: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[] = [];
+    if (pool.length < 2) return transfers;
+
+    const n = randomInt(5, 10);
+    for (let i=0;i<n;i++) {
+      const from = pool[randomInt(0, pool.length-1)];
+      let to = pool[randomInt(0, pool.length-1)];
+      if (to.name === from.name) to = pool[(pool.indexOf(from)+1)%pool.length];
+      const feeBase = Math.max(500000, ((from.strength + to.strength)/2 - 50) ** 2 * 20000);
+      const fee = Math.round(feeBase * (0.8 + Math.random()*0.6));
+      const player = generateClubPlayerName(to.country);
+      transfers.push({ player, from: from.name, to: to.name, fee, type: 'domestic' });
+    }
+
+    const extCount = randomInt(1, 3);
+    for (let i=0;i<extCount;i++) {
+      const to = pool[randomInt(0, pool.length-1)];
+      const player = generateClubPlayerName(to.country);
+      const fee = Math.round((to.strength - 40) ** 2 * 30000 * (0.8 + Math.random()*0.6));
+      transfers.push({ player, from: 'Abroad', to: to.name, fee, type: 'external' });
+    }
+
+    if (Math.random() < 0.6) {
+      const to = pool.find(c=>c.name===currentClubName) || pool[0];
+      const from = pool.find(c=>c.name!==to.name) || pool[1];
+      const fee = Math.round((to.strength - 45) ** 2 * 28000);
+      transfers.push({ player: generateClubPlayerName(to.country), from: from.name, to: to.name, fee, type: 'domestic' });
+    }
+
+    return transfers;
+  };
+
   const simulateSeason = () => {
     // Get current club
     let clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
@@ -290,11 +345,13 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       title: 'Your Performance This Season',
       onComplete: (evolution) => {
         const evo = parseInt(evolution);
-        // 2) League position draw weighted by club strength
-        const ranked = [...clubs].sort((a,b)=> b.strength - a.strength);
-        const expected = Math.max(1, ranked.findIndex(c=>c.name===currentClub.name)+1 || Math.ceil(totalTeams/2));
+        // 2) League position draw weighted by effective strength (club + player impact)
+        const rankedByEff = [...clubs]
+          .map(c => ({ c, eff: c.name === currentClub.name ? effectiveStrength(currentClub, currentPlayer, isStarter, evo) : c.strength }))
+          .sort((a,b)=> b.eff - a.eff);
+        const expected = Math.max(1, rankedByEff.findIndex(e=>e.c.name===currentClub.name)+1 || Math.ceil(totalTeams/2));
         const leagueBalls: Record<string, number> = {};
-        const sigmaBase = Math.max(1.3, (100 - currentClub.strength) / 22 + (totalTeams/30));
+        const sigmaBase = Math.max(1.1, (100 - effectiveStrength(currentClub, currentPlayer, isStarter, evo)) / 24 + (totalTeams/34));
         for (let pos=1; pos<=totalTeams; pos++) {
           const dist = Math.abs(pos - expected);
           const w = gaussianWeight(dist, sigmaBase);
@@ -419,6 +476,28 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
     const countries = Object.keys(LEAGUES);
     const standings: Record<string, string[]> = {};
+
+    // Player's league table honoring the drawn position
+    const currentLeagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    if (currentLeagueClubs.length) {
+      const withEff = currentLeagueClubs
+        .map(c => ({ c, eff: c.name === club.name ? effectiveStrength(club, currentPlayer, isStarter, evolution) : c.strength }))
+        .sort((a,b)=> b.eff - a.eff)
+        .map(e => e.c.name);
+      const idxMe = withEff.indexOf(club.name);
+      if (idxMe !== -1) {
+        withEff.splice(idxMe, 1);
+        withEff.splice(Math.min(position-1, withEff.length), 0, club.name);
+      }
+      const tableArr = withEff.map(n => {
+        const cc = currentLeagueClubs.find(x=>x.name===n)!;
+        return `${cc.name} • Str ${cc.strength} • ${formatCurrency(cc.budget)}`;
+      });
+      const rank = getCountryRank(currentPlayer.country);
+      standings[`${currentPlayer.country} • ${currentPlayer.league} (Rank ${rank})`] = tableArr.slice(0, 10);
+    }
+
+    // Reference top leagues
     countries.forEach(ct => {
       const topLeague = getLeague(0, ct);
       const table = getLeagueClubs(ct, topLeague)
@@ -426,7 +505,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         .slice(0,10)
         .map(c=> `${c.name} • Str ${c.strength} • ${formatCurrency(c.budget)}`);
       const rank = getCountryRank(ct);
-      standings[`${ct} • ${topLeague} (Rank ${rank})`] = table;
+      standings[`${ct} • ${topLeague} (Rank ${rank})`] = standings[`${ct} • ${topLeague} (Rank ${rank})`] || table;
     });
 
     // Winners and coefficients update
@@ -463,6 +542,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       if (upper) nextLeague = upper;
     }
 
+    const transfers = simulateTransfers(currentPlayer.country, currentPlayer.league, currentPlayer.club);
+
     setSeasonResults({
       league: { position, total: totalTeams },
       cup: cupResult,
@@ -473,6 +554,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       standings,
       globalWinners,
       topXILeague,
+      transfers,
     });
 
     if (nextLeague !== currentPlayer.league) {
