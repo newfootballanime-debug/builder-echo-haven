@@ -107,7 +107,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     return clubs[clubs.length - 1];
   };
 
-  const proposeOffer = (type: 'external'|'domestic'|'loan', club: Club, years: number) => {
+  const proposeOffer = (type: 'external'|'domestic'|'loan'|'renewal'|'signing', club: Club, years: number) => {
     const salary = calculateSalary(currentPlayer, club);
     setPendingOffer({ type, club, salary, contractYears: years });
     setOfferOpen(true);
