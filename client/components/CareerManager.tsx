@@ -573,6 +573,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       standings,
       globalWinners,
       topXILeague,
+      topXIGlobal,
       transfers,
     });
 
