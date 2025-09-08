@@ -578,6 +578,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     });
 
     if (nextLeague !== currentPlayer.league) {
+      if (leagueIdx > 0 && position <= promote) trophies.push(`⬆️ Promoted to ${nextLeague}`);
+      if (leagueIdx === 0 && position > totalTeams - relegate) trophies.push(`⬇️ Relegated to ${nextLeague}`);
       updatePlayer({ league: nextLeague });
     }
     setSeasonInProgress(false);
