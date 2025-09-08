@@ -249,23 +249,17 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     }
 
     if (club) {
-      setSeasonInProgress(true);
-      updatePlayer({
-        club: club.name,
-        league: club.league,
-        contractYears: 2,
-        isOnLoan: false
-      });
+      // Show signing offer instead of auto-assigning
+      setSeasonInProgress(false);
+      setPendingOffer({ type: 'signing', club, salary: calculateSalary(currentPlayer, club), contractYears: 2 });
+      setOfferOpen(true);
     } else {
-      // Last resort generic assignment in top league
+      // Last resort generic assignment in top league (as signing)
       const topLeague = getLeague(0, country);
-      setSeasonInProgress(true);
-      updatePlayer({
-        club: 'Generic Club',
-        league: topLeague,
-        contractYears: 2,
-        isOnLoan: false
-      });
+      const genericClub: Club = { name: 'Generic Club', country, league: topLeague, strength: Math.max(60, currentPlayer.rating + 5), budget: 10000000, europeanComp: '' };
+      setSeasonInProgress(false);
+      setPendingOffer({ type: 'signing', club: genericClub, salary: calculateSalary(currentPlayer, genericClub), contractYears: 2 });
+      setOfferOpen(true);
     }
   };
 
