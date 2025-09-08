@@ -49,6 +49,58 @@ export function generateRandomName(nationality?: string): string {
   return `${first} ${last} (${nat})`;
 }
 
+// More realistic name generation by country
+export function generatePlayerName(country?: string): string {
+  const dict: Record<string, { first: string[]; last: string[] }> = {
+    Romania: {
+      first: ["Andrei","Mihai","Alexandru","Vlad","Florin","Radu","Ștefan","Cosmin","Ionuț","Gabriel"],
+      last: ["Popescu","Ionescu","Stan","Dumitrescu","Petrescu","Stoica","Diaconescu","Ilie","Enache","Nistor"],
+    },
+    England: {
+      first: ["Harry","Jack","Oliver","George","James","William","Charlie","Jacob","Thomas","Alfie"],
+      last: ["Smith","Brown","Taylor","Wilson","Johnson","Jackson","White","Harris","Martin","Thompson"],
+    },
+    Spain: {
+      first: ["Sergio","Carlos","Juan","Miguel","Pedro","Rafael","Javier","Andrés","Ángel","Fernando"],
+      last: ["García","Martínez","Rodríguez","Hernández","López","González","Sánchez","Ramírez","Cruz","Torres"],
+    },
+    Italy: {
+      first: ["Marco","Lorenzo","Matteo","Francesco","Giuseppe","Alessandro","Davide","Federico","Simone","Antonio"],
+      last: ["Rossi","Bianchi","Romano","Greco","Esposito","Conti","Ferrari","Colombo","Ricci","Galli"],
+    },
+    Germany: {
+      first: ["Thomas","Michael","Lars","Jens","Sebastian","Andreas","Tobias","Florian","Patrick","Daniel"],
+      last: ["Schmidt","Müller","Weber","Wagner","Becker","Hoffmann","Richter","Klein","Wolf","Neumann"],
+    },
+    France: {
+      first: ["Kylian","Antoine","Hugo","Louis","Théo","Maxime","Alexandre","Nicolas","Julien","Romain"],
+      last: ["Mbappé","Giroud","Dupont","Martin","Bernard","Petit","Robert","Durand","Leroy","Moreau"],
+    },
+    Netherlands: {
+      first: ["Daan","Sem","Luuk","Jens","Thijs","Timo","Finn","Milan","Bram","Lars"],
+      last: ["De Jong","Van Dijk","Van der Berg","De Vries","Janssen","Bakker","Visser","Smit","De Boer","Van der Meer"],
+    },
+    Portugal: {
+      first: ["Diogo","Bernardo","Gonçalo","João","André","Rui","Ricardo","Tiago","Miguel","Nuno"],
+      last: ["Silva","Santos","Ferreira","Oliveira","Pereira","Costa","Carvalho","Sousa","Rodrigues","Barbosa"],
+    },
+    Turkey: {
+      first: ["Hakan","Cenk","Burak","Emre","Yusuf","Kerem","Orkun","Cengiz","Enes","Ozan"],
+      last: ["Yılmaz","Şahin","Demiral","Tosun","Aktürkoğlu","Ünder","Yazıcı","Kabak","Ayhan","Çelik"],
+    },
+    Scotland: {
+      first: ["Liam","Callum","Finlay","Euan","Harris","Archie","Rory","Connor","Calum","Fraser"],
+      last: ["McDonald","McGregor","Campbell","Murray","Stewart","Robertson","Graham","Allan","Clark","Henderson"],
+    },
+  };
+  const cfg = country && dict[country] ? dict[country] : null;
+  if (cfg) {
+    return `${randomChoice(cfg.first)} ${randomChoice(cfg.last)}`;
+  }
+  // Fallback generic
+  return `${randomChoice(FIRST_NAMES)} ${randomChoice(LAST_NAMES)}`;
+}
+
 // Initial player attributes based on position and rating
 export function generateInitialAttributes(position: string, rating: number): Record<string, number> {
   const attributes: Record<string, number> = {};
