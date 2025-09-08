@@ -802,9 +802,28 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 </CardContent>
               </Card>
 
+              {seasonResults.transfers && seasonResults.transfers.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Transfers This Season</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-2 text-sm">
+                      {seasonResults.transfers.map((t, i) => (
+                        <div key={i} className="flex justify-between">
+                          <span>{t.player}</span>
+                          <span className="font-medium">{t.from} → {t.to}</span>
+                          <span>{formatCurrency(t.fee)}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
               <Card>
                 <CardHeader>
-                  <CardTitle>League Standings (Top 5)</CardTitle>
+                  <CardTitle>League Standings (Top 10)</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {seasonResults.standings && (
