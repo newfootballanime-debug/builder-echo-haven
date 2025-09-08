@@ -61,6 +61,9 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     contractYears: number
   } | null>(null);
   const [transferAttemptsLeft, setTransferAttemptsLeft] = useState<number>(3);
+  const [clubStrengthDelta, setClubStrengthDelta] = useState<Record<string, Record<string, number>>>({});
+  const [clubBudgetDelta, setClubBudgetDelta] = useState<Record<string, Record<string, number>>>({});
+  const [clubLeagueOverride, setClubLeagueOverride] = useState<Record<string, Record<string, string>>>({});
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
