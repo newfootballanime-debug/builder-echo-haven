@@ -366,7 +366,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     let clubs = getAdjustedClubs(currentPlayer.country, currentPlayer.league);
     if (!clubs.length) {
       const topLeague = getLeague(0, currentPlayer.country);
-      const topClubs = getLeagueClubs(currentPlayer.country, topLeague);
+      const topClubs = getAdjustedClubs(currentPlayer.country, topLeague);
       if (topClubs.length) {
         clubs = topClubs;
         if (!currentPlayer.league) updatePlayer({ league: topLeague });
