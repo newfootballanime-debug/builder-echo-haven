@@ -192,7 +192,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
     setSeasonInProgress(true);
     setSeasonResults(null);
-    
+    setTransferAttemptsLeft(3);
+
     // Age the player
     const newAge = currentPlayer.age + 1;
     const newSeason = currentPlayer.season + 1;
