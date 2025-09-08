@@ -67,7 +67,19 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
-  }, [currentPlayer, onPlayerUpdate]);
+    // auto-save snapshot
+    try {
+      const payload = {
+        player: currentPlayer,
+        meta: {
+          clubStrengthDelta,
+          clubBudgetDelta,
+          clubLeagueOverride,
+        },
+      };
+      localStorage.setItem('careerSaveV1', JSON.stringify(payload));
+    } catch {}
+  }, [currentPlayer, onPlayerUpdate, clubStrengthDelta, clubBudgetDelta, clubLeagueOverride]);
 
   // Initialize selected standings key when results change
   useEffect(() => {
