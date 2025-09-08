@@ -627,6 +627,13 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       if (leagueIdx > 0 && position <= promote) trophies.push(`⬆️ Promoted to ${nextLeague}`);
       if (leagueIdx === 0 && position > totalTeams - relegate) trophies.push(`⬇️ Relegated to ${nextLeague}`);
       updatePlayer({ league: nextLeague });
+      setClubLeagueOverride(prev => ({
+        ...prev,
+        [currentPlayer.country]: {
+          ...(prev[currentPlayer.country] || {}),
+          [club.name]: nextLeague,
+        }
+      }));
     }
     setSeasonInProgress(false);
   };
