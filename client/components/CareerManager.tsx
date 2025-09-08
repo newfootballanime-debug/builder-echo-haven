@@ -180,7 +180,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const club = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
     if (!club) return;
     const newSalary = Math.floor(calculateSalary(currentPlayer, club) * 1.1);
-    updatePlayer({ salary: newSalary, contractYears: Math.max(2, currentPlayer.contractYears + 1) });
+    setPendingOffer({ type: 'renewal', club, salary: newSalary, contractYears: Math.max(2, currentPlayer.contractYears + 1) });
+    setOfferOpen(true);
   };
 
   const handleNewSeason = () => {
