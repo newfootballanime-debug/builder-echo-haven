@@ -319,6 +319,48 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     return transfers;
   };
 
+  const getAdjustedClubs = (country: string, league: string): Club[] => {
+    const leagues = LEAGUES[country] || [];
+    let all: Club[] = [];
+    leagues.forEach(l => { all = all.concat(getLeagueClubs(country, l.name)); });
+    const over = clubLeagueOverride[country] || {};
+    const sDelta = clubStrengthDelta[country] || {};
+    const bDelta = clubBudgetDelta[country] || {};
+    return all
+      .filter(c => (over[c.name] ?? c.league) === league)
+      .map(c => ({
+        ...c,
+        league,
+        strength: Math.max(40, Math.min(99, Math.round(c.strength + (sDelta[c.name] || 0)))),
+        budget: Math.max(0, Math.round(c.budget + (bDelta[c.name] || 0)))
+      }));
+  };
+
+  const applyTransfersToAdjustments = (country: string, transfers: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[]) => {
+    if (!transfers.length) return;
+    setClubStrengthDelta(prev => {
+      const copy = { ...prev } as typeof prev;
+      copy[country] = { ...(copy[country] || {}) };
+      transfers.forEach(t => {
+        const inc = Math.min(3, Math.max(1, Math.round(t.fee / 15000000)));
+        copy[country][t.to] = (copy[country][t.to] || 0) + inc;
+        if (t.from !== 'Abroad') {
+          copy[country][t.from] = (copy[country][t.from] || 0) - 1;
+        }
+      });
+      return copy;
+    });
+    setClubBudgetDelta(prev => {
+      const copy = { ...prev } as typeof prev;
+      copy[country] = { ...(copy[country] || {}) };
+      transfers.forEach(t => {
+        copy[country][t.to] = (copy[country][t.to] || 0) - t.fee;
+        if (t.from !== 'Abroad') copy[country][t.from] = (copy[country][t.from] || 0) + t.fee;
+      });
+      return copy;
+    });
+  };
+
   const simulateSeason = () => {
     // Get current club
     let clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
