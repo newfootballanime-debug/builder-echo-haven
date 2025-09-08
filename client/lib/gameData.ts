@@ -128,11 +128,11 @@ export const LEAGUES: Record<string, Array<{name: string, size: number, budget: 
 // Comprehensive clubs by country with strength and budget
 export const CLUBS: Record<string, Array<{club: string, strength: number, league: string, budget: number}>> = {
   'Romania': [
-    {'club': 'FCSB', 'strength': 80, 'league': 'Liga 1', 'budget': 15_000_000},
-    {'club': 'CFR Cluj', 'strength': 79, 'league': 'Liga 1', 'budget': 14_500_000},
-    {'club': 'Farul Constanta', 'strength': 79, 'league': 'Liga 1', 'budget': 12_500_000},
-    {'club': 'Rapid Bucuresti', 'strength': 80, 'league': 'Liga 1', 'budget': 15_000_000},
-    {'club': 'Universitatea Craiova', 'strength': 80, 'league': 'Liga 1', 'budget': 11_000_000},
+    {'club': 'FCSB', 'strength': 82, 'league': 'Liga 1', 'budget': 20_000_000},
+    {'club': 'Rapid Bucuresti', 'strength': 82, 'league': 'Liga 1', 'budget': 20_000_000},
+    {'club': 'CFR Cluj', 'strength': 80, 'league': 'Liga 1', 'budget': 16_000_000},
+    {'club': 'Farul Constanta', 'strength': 79, 'league': 'Liga 1', 'budget': 13_000_000},
+    {'club': 'Universitatea Craiova', 'strength': 79, 'league': 'Liga 1', 'budget': 12_000_000},
     {'club': 'Petrolul Ploiesti', 'strength': 72, 'league': 'Liga 1', 'budget': 6_500_000},
     {'club': 'Sepsi OSK', 'strength': 74, 'league': 'Liga 1', 'budget': 7_000_000},
     {'club': 'FC Voluntari', 'strength': 70, 'league': 'Liga 1', 'budget': 5_500_000},
@@ -514,7 +514,7 @@ function genStrengthBudget(country: string, league: string, name: string, i: num
   let strength = Math.round(max - (max - min) * (i / Math.max(1, n - 1)));
   const eliteBoost = new Set(['Real Madrid','Barcelona','Atletico Madrid','Bayern Munich','Borussia Dortmund','RB Leipzig','Juventus','Inter Milan','AC Milan','Napoli','Paris Saint-Germain','Liverpool','Manchester City','Arsenal','Chelsea','Manchester United','Ajax','PSV Eindhoven','Feyenoord','Benfica','Porto','Sporting CP']);
   if (eliteBoost.has(name)) strength = Math.min(96, strength + 4);
-  if (country === 'Romania' && (name.toLowerCase().includes('rapid') || name.toLowerCase().includes('fcsb'))) strength = 80;
+  if (country === 'Romania' && (name.toLowerCase().includes('rapid') || name.toLowerCase().includes('fcsb'))) strength = 82;
   const rel = (strength - min) / (max - min);
   const budget = Math.round(leagueBudget * (0.6 + 1.8 * rel));
   return { strength, budget };
