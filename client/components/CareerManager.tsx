@@ -17,7 +17,7 @@ import {
   simulateCup, simulateEuropean, formatCurrency, randomInt,
   getEuropeanSlots, getCountryRank, simulateGlobalWinners,
   gaussianWeight, getPromotionRelegationCounts, getLeagueIndex,
-  generateRandomName
+  generateRandomName, generatePlayerName
 } from '@/lib/gameLogic';
 
 interface CareerManagerProps {
