@@ -165,10 +165,12 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   };
 
   const requestLoan = () => {
+    if (transferAttemptsLeft <= 0) return;
     if (!currentPlayer.country || !currentPlayer.league) return;
     const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
     if (!pool.length) return;
     const chosen = pickWeighted(pool, currentPlayer.rating);
+    setTransferAttemptsLeft(v=>v-1);
     proposeOffer('loan', chosen, 1);
   };
 
