@@ -277,7 +277,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   };
 
   const generateClubPlayerName = (country: string) => {
-    return generateRandomName(Math.random() < 0.7 ? country : undefined);
+    return generatePlayerName(country);
   };
 
   const simulateTransfers = (country: string, currentLeague: string, currentClubName: string): { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[] => {
