@@ -46,8 +46,8 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     trophies: string[],
     globalWinners?: Record<string, string>,
     standings?: Record<string, string[]>,
-    topXILeague?: { position: string, club: string }[],
-    topXIGlobal?: { position: string, club: string, country: string }[],
+    topXILeague?: { position: string, player: string, club: string }[],
+    topXIGlobal?: { position: string, player: string, club: string, country: string }[],
     transfers?: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[]
   } | null>(null);
   const [standingsKey, setStandingsKey] = useState<string | null>(null);
@@ -668,7 +668,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
                 <CardTitle className="text-xl md:text-2xl font-bold text-green-800">
-                  ��� {currentPlayer.name}
+                  ⚽ {currentPlayer.name}
                 </CardTitle>
                 <p className="text-green-600 text-sm md:text-base">
                   {currentPlayer.position} • {currentPlayer.age} years old • Rating: {currentPlayer.rating}
