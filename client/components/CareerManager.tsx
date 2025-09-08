@@ -89,6 +89,21 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     }
   }, [seasonResults?.standings]);
 
+  // Load dynamic meta if continuing a career
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('careerSaveV1');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (parsed?.meta) {
+          if (parsed.meta.clubStrengthDelta) setClubStrengthDelta(parsed.meta.clubStrengthDelta);
+          if (parsed.meta.clubBudgetDelta) setClubBudgetDelta(parsed.meta.clubBudgetDelta);
+          if (parsed.meta.clubLeagueOverride) setClubLeagueOverride(parsed.meta.clubLeagueOverride);
+        }
+      }
+    } catch {}
+  }, []);
+
   // Auto-sign with a club in Season 1 (like the Python flow)
   useEffect(() => {
     if (!firstSeasonHandled && !currentPlayer.club && currentPlayer.season === 1 && !seasonInProgress && !showDraw) {
