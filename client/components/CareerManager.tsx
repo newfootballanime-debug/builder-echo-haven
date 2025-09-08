@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -463,18 +464,6 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       if (upper) nextLeague = upper;
     }
 
-    // Promotion/Relegation league change for player next season
-    const leagueIdx = getLeagueIndex(currentPlayer.country, currentPlayer.league);
-    const { promote, relegate } = getPromotionRelegationCounts(totalTeams);
-    let nextLeague = currentPlayer.league;
-    if (leagueIdx === 0 && position > totalTeams - relegate) {
-      const lower = getLeague(1, currentPlayer.country);
-      if (lower) nextLeague = lower;
-    } else if (leagueIdx > 0 && position <= promote) {
-      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
-      if (upper) nextLeague = upper;
-    }
-
     setSeasonResults({
       league: { position, total: totalTeams },
       cup: cupResult,
@@ -487,9 +476,6 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       topXILeague,
     });
 
-    if (nextLeague !== currentPlayer.league) {
-      updatePlayer({ league: nextLeague });
-    }
     if (nextLeague !== currentPlayer.league) {
       updatePlayer({ league: nextLeague });
     }
