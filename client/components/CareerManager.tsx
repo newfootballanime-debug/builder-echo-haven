@@ -149,6 +149,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   };
 
   const requestExternalTransfer = () => {
+    if (transferAttemptsLeft <= 0) return;
     const countries = Object.keys(LEAGUES);
     let candidates: Club[] = [];
     countries.forEach(country => {
@@ -159,6 +160,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     });
     if (!candidates.length) return;
     const chosen = pickWeighted(candidates, currentPlayer.rating);
+    setTransferAttemptsLeft(v=>v-1);
     proposeOffer('external', chosen, 3);
   };
 
