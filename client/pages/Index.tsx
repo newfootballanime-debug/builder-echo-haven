@@ -143,7 +143,7 @@ export default function Index() {
 
   if (gamePhase === "intro") {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-green-800 to-blue-900 flex flex-col">
+      <div className="min-h-screen bg-gradient-to-br from-blue-900 via-green-800 to-blue-900 flex flex-col text-white">
         {/* Language Toggle */}
         <div className="absolute top-4 right-4 z-10">
           <div className="flex bg-white/20 rounded-lg p-1 backdrop-blur-sm border border-white/20">
