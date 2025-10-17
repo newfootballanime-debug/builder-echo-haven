@@ -1125,7 +1125,7 @@ export default function CareerManager({
           </TabsList>
 
           <TabsContent value="career" className="space-y-4">
-            <Card className="text-gray-900">
+            <Card className="bg-white text-gray-900">
               <CardHeader>
                 <CardTitle>Career History</CardTitle>
               </CardHeader>
@@ -1174,7 +1174,7 @@ export default function CareerManager({
           </TabsContent>
 
           <TabsContent value="attributes" className="space-y-4">
-            <Card className="text-gray-900">
+            <Card className="bg-white text-gray-900">
               <CardHeader>
                 <CardTitle>Player Attributes</CardTitle>
               </CardHeader>
@@ -1211,7 +1211,7 @@ export default function CareerManager({
           <TabsContent value="season" className="space-y-4">
             {seasonResults ? (
               <>
-                <Card className="text-gray-900">
+                <Card className="bg-white text-gray-900">
                   <CardHeader>
                     <CardTitle>Season {currentPlayer.season} Results</CardTitle>
                   </CardHeader>
@@ -1283,7 +1283,7 @@ export default function CareerManager({
 
                 {seasonResults.transfers &&
                   seasonResults.transfers.length > 0 && (
-                    <Card className="text-gray-900">
+                    <Card className="bg-white text-gray-900">
                       <CardHeader>
                         <CardTitle>Transfers This Season</CardTitle>
                       </CardHeader>
@@ -1303,7 +1303,7 @@ export default function CareerManager({
                     </Card>
                   )}
 
-                <Card className="text-gray-900">
+                <Card className="bg-white text-gray-900">
                   <CardHeader>
                     <CardTitle>League Standings (Top 10)</CardTitle>
                   </CardHeader>
@@ -1347,7 +1347,7 @@ export default function CareerManager({
                   </CardContent>
                 </Card>
 
-                <Card className="text-gray-900">
+                <Card className="bg-white text-gray-900">
                   <CardHeader>
                     <CardTitle>European Winners</CardTitle>
                   </CardHeader>
@@ -1366,7 +1366,7 @@ export default function CareerManager({
                   </CardContent>
                 </Card>
 
-                <Card className="text-gray-900">
+                <Card className="bg-white text-gray-900">
                   <CardHeader>
                     <CardTitle>Top XI</CardTitle>
                   </CardHeader>
@@ -1403,7 +1403,7 @@ export default function CareerManager({
                 </Card>
               </>
             ) : (
-              <Card className="text-gray-900">
+              <Card className="bg-white text-gray-900">
                 <CardContent className="text-center py-12">
                   <p className="text-gray-500">
                     Play a new season to see results.
@@ -1414,7 +1414,7 @@ export default function CareerManager({
           </TabsContent>
 
           <TabsContent value="actions" className="space-y-4">
-            <Card className="text-gray-900">
+            <Card className="bg-white text-gray-900">
               <CardHeader>
                 <CardTitle>Available Actions</CardTitle>
               </CardHeader>
