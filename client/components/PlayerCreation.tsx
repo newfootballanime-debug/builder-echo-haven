@@ -141,7 +141,7 @@ export default function PlayerCreation({
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 flex items-start md:items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        <Card className="bg-white/95 backdrop-blur-sm text-gray-900">
+        <Card className="bg-white/95 backdrop-blur-sm text-gray-900 surface-light">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">
               ⚽ Create Your Footballer
@@ -178,7 +178,7 @@ export default function PlayerCreation({
                     value={playerName}
                     onChange={(e) => setPlayerName(e.target.value)}
                     placeholder="Enter your name..."
-                    className="mt-1"
+                    className="mt-1 bg-white text-gray-900 placeholder:text-gray-500 border-gray-300"
                   />
                 </div>
                 <div>
@@ -194,7 +194,7 @@ export default function PlayerCreation({
                     onChange={(e) =>
                       setPlayerAge(parseInt(e.target.value) || 18)
                     }
-                    className="mt-1"
+                    className="mt-1 bg-white text-gray-900 placeholder:text-gray-500 border-gray-300"
                   />
                 </div>
                 <Button
@@ -220,7 +220,7 @@ export default function PlayerCreation({
                         selectedCountry === country ? "default" : "outline"
                       }
                       onClick={() => setSelectedCountry(country)}
-                      className={`text-sm ${selectedCountry === country ? "bg-green-600 text-white" : "hover:bg-green-50"}`}
+                      className={`text-sm ${selectedCountry === country ? "bg-green-600 text-white" : "bg-white text-gray-900 border border-gray-300 hover:bg-green-50"}`}
                     >
                       {country}
                     </Button>
@@ -252,7 +252,7 @@ export default function PlayerCreation({
                       className={`text-left justify-start text-sm ${
                         favoriteClub === club.club
                           ? "bg-green-600 text-white"
-                          : "hover:bg-green-50"
+                          : "bg-white text-gray-900 border border-gray-300 hover:bg-green-50"
                       }`}
                     >
                       {club.club} (Strength: {club.strength})
