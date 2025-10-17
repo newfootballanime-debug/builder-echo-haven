@@ -439,7 +439,7 @@ const TEAM_LISTS_2025_26: Record<string, Record<string, string>> = {
   },
   'Sweden': {
     'Allsvenskan': 'Häcken, Djurgården, Hammarby, Kalmar, AIK, Elfsborg, Malmö FF, IFK Göteborg, Norrköping, Sirius, Värnamo, Mjällby, Varberg, Helsingborg, Degerfors, Sundsvall',
-    'Superettan': 'Halmstad, Brommapojkarna, Öster, Landskrona, Trelleborg, AFC Eskilstuna, Västerås SK, Örebro, Skövde AIK, Jönköpings Södra, Norrby, Utsikten, Örgryte, Brage, Dalkurd, Östersund'
+    'Superettan': 'Halmstad, Brommapojkarna, Öster, Landskrona, Trelleborg, AFC Eskilstuna, Västerås SK, Örebro, Skövde AIK, J��nköpings Södra, Norrby, Utsikten, Örgryte, Brage, Dalkurd, Östersund'
   },
   'Poland': {
     'Ekstraklasa': 'Lech Poznań, Raków Częstochowa, Legia Warsaw, Pogoń Szczecin, Lechia Gdańsk, Wisła Płock, Radomiak Radom, Górnik Zabrze, Cracovia, Śląsk Wrocław, Jagiellonia Białystok, Zagłębie Lubin, Widzew Łódź, Stal Mielec, Korona Kielce, Warta Poznań, Piast Gliwice, Miedź Legnica',
@@ -577,9 +577,42 @@ function genStrengthBudget(country: string, league: string, name: string, i: num
     return `${name} B`;
   }
 
+  function generateClubName(country: string, league: string, index: number): string {
+    const SUFFIXES = ['United','City','Athletic','Sporting','Rovers','Wanderers','Town','County','FC','SC'];
+    const code = country.split(' ').map(s=>s[0]).join('').toUpperCase();
+    const suffix = SUFFIXES[index % SUFFIXES.length];
+    return `${league} ${suffix} ${code}-${index+1}`;
+  }
+
+  function fillLeague(country: string, league: string, targetSize: number) {
+    const existing = (CLUBS[country] || []).filter(c => c.league === league);
+    const need = Math.max(0, targetSize - existing.length);
+    if (!need) return;
+    const leagueInfo = (LEAGUES[country] || []).find(l => l.name === league);
+    const baseBudget = leagueInfo?.budget || 12_000_000;
+    for (let i = 0; i < need; i++) {
+      const name = generateClubName(country, league, i);
+      if ((CLUBS[country] || []).some(c => c.club === name)) continue;
+      const tier = (LEAGUES[country] || []).findIndex(l => l.name === league);
+      const max = tier === 0 ? 85 : tier === 1 ? 78 : 72;
+      const min = tier === 0 ? 68 : tier === 1 ? 62 : 58;
+      const strength = Math.round(min + (max - min) * Math.random());
+      const budget = Math.round(baseBudget * (0.7 + Math.random()*0.6));
+      CLUBS[country] = CLUBS[country] || [];
+      CLUBS[country].push({ club: name, strength, league, budget });
+    }
+  }
+
   for (const country of Object.keys(LEAGUES)) {
     const leagues = LEAGUES[country] || [];
-    if (leagues.length >= 3) continue;
+    if (leagues.length >= 3) {
+      // ensure sizes for first three leagues
+      for (let i = 0; i < Math.min(3, leagues.length); i++) {
+        const l = leagues[i];
+        fillLeague(country, l.name, l.size);
+      }
+      continue;
+    }
 
     const desired = 3 - leagues.length;
     const existingClubs = (CLUBS[country] || []).slice().sort((a,b)=> b.strength - a.strength);
@@ -624,6 +657,12 @@ function genStrengthBudget(country: string, league: string, name: string, i: num
       const name = LEAGUES[country].length === 1 ? (LEAGUES[country][0].name === 'Liga 1' ? 'Liga 2' : `${LEAGUES[country][0].name} 2`) : getThirdLeagueName(country);
       const fallbackSize = 16;
       if (!LEAGUES[country].some(l => l.name === name)) LEAGUES[country].push({ name, size: fallbackSize, budget: 10_000_000 });
+    }
+
+    // After ensuring three leagues exist, fill each of the first three to target sizes
+    const list = LEAGUES[country] || [];
+    for (let i = 0; i < Math.min(3, list.length); i++) {
+      fillLeague(country, list[i].name, list[i].size);
     }
   }
 })();
