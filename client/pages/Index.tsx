@@ -164,14 +164,14 @@ export default function Index() {
         <div className="flex-1 flex items-center justify-center p-4">
           <div className="text-center max-w-4xl mx-auto w-full">
             {/* Hero Section - Compact for mobile */}
-            <div className="space-y-4 md:space-y-8 mb-8 md:mb-12">
-              <h1 className="text-4xl md:text-6xl lg:text-8xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-green-300 to-blue-300 animate-pulse">
+            <div className="space-y-4 md:space-y-8 mb-8 md:mb-12 bg-black/30 rounded-xl p-4 md:p-6">
+              <h1 className="text-4xl md:text-6xl lg:text-8xl font-extrabold text-white text-glow">
                 ⚽ {currentText.title}
               </h1>
-              <h2 className="text-xl md:text-3xl lg:text-5xl font-bold text-white">
+              <h2 className="text-xl md:text-3xl lg:text-5xl font-bold text-white text-glow">
                 {currentText.subtitle}
               </h2>
-              <p className="text-sm md:text-xl lg:text-2xl text-blue-100 leading-relaxed px-4">
+              <p className="text-sm md:text-xl lg:text-2xl text-white/95 leading-relaxed px-4">
                 {currentText.description}
               </p>
             </div>
@@ -193,7 +193,7 @@ export default function Index() {
                   <span className="relative z-10">🔁 {language === 'en' ? 'Continue Career' : 'Continuă Cariera'}</span>
                 </button>
               )}
-              <p className="text-blue-200 text-sm md:text-lg mt-4">
+              <p className="text-white/90 text-sm md:text-lg mt-4">
                 {currentText.readyQuestion}
               </p>
             </div>
@@ -203,21 +203,21 @@ export default function Index() {
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🎰</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">{currentText.features.draws}</h3>
-                <p className="text-blue-100 text-sm md:text-base">
+                <p className="text-white/90 text-sm md:text-base">
                   {currentText.features.drawsDesc}
                 </p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🏆</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">{currentText.features.career}</h3>
-                <p className="text-blue-100 text-sm md:text-base">
+                <p className="text-white/90 text-sm md:text-base">
                   {currentText.features.careerDesc}
                 </p>
               </div>
               <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🌍</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">{currentText.features.leagues}</h3>
-                <p className="text-blue-100 text-sm md:text-base">
+                <p className="text-white/90 text-sm md:text-base">
                   {currentText.features.leaguesDesc}
                 </p>
               </div>
