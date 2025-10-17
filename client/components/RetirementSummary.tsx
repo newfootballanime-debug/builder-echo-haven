@@ -57,7 +57,7 @@ export default function RetirementSummary({ player, onNewCareer, onRestart }: Re
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-900 via-purple-800 to-indigo-900 flex items-center justify-center p-4">
       <div className="w-full max-w-4xl">
-        <Card className="bg-white/95 backdrop-blur-sm">
+        <Card className="bg-white/95 backdrop-blur-sm text-gray-900">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl md:text-4xl font-bold text-purple-800">
               🏆 Career Completed
