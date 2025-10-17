@@ -404,13 +404,47 @@ export function gaussianWeight(distance: number, sigma: number): number {
 
 // --- UEFA coefficients (simplified) ---
 export const COUNTRY_COEFFICIENTS: Record<string, number> = (() => {
-  const base: Record<string, number> = {};
-  [
-    ['England', 100], ['Spain', 98], ['Germany', 95], ['Italy', 93], ['France', 85],
-    ['Netherlands', 78], ['Portugal', 76], ['Belgium', 62], ['Scotland', 58], ['Turkey', 52],
-    ['Austria', 50], ['Switzerland', 48], ['Czech Republic', 46], ['Greece', 45], ['Denmark', 44],
-    ['Croatia', 43], ['Poland', 42], ['Romania', 40], ['Norway', 38], ['Sweden', 37]
-  ].forEach(([c, v]) => (base[c as string] = v as number));
+  const base: Record<string, number> = {
+    England: 106,
+    Spain: 100,
+    Italy: 98,
+    Germany: 96,
+    France: 84,
+    Netherlands: 79,
+    Portugal: 78,
+    Belgium: 62,
+    Scotland: 56,
+    Turkey: 55,
+    Austria: 52,
+    Switzerland: 50,
+    'Czech Republic': 48,
+    Greece: 47,
+    Denmark: 45,
+    Croatia: 44,
+    Poland: 43,
+    Romania: 40,
+    Norway: 39,
+    Sweden: 38,
+    Serbia: 37,
+    Ukraine: 44,
+    Russia: 0,
+    'Bosnia and Herzegovina': 31,
+    Bulgaria: 32,
+    Hungary: 36,
+    Slovenia: 30,
+    Slovakia: 33,
+    Ireland: 28,
+    Finland: 34,
+    Iceland: 24,
+    'North Macedonia': 23,
+    Albania: 25,
+    Armenia: 22,
+    Azerbaijan: 26,
+    Georgia: 27,
+    Belarus: 0,
+    Cyprus: 35,
+    Israel: 41
+  };
   return base;
 })();
 
