@@ -1,83 +1,84 @@
-import { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import BallDraw from './BallDraw';
-import { POSITIONS, LEAGUES, CLUBS } from '@/lib/gameData';
-import { createPlayer } from '@/lib/gameLogic';
-import { Player } from '@/lib/types';
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import BallDraw from "./BallDraw";
+import { POSITIONS, LEAGUES, CLUBS } from "@/lib/gameData";
+import { createPlayer } from "@/lib/gameLogic";
+import { Player } from "@/lib/types";
 
 interface PlayerCreationProps {
   onPlayerCreated: (player: Player) => void;
 }
 
-export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps) {
+export default function PlayerCreation({
+  onPlayerCreated,
+}: PlayerCreationProps) {
   const [step, setStep] = useState(0);
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState("");
   const [playerAge, setPlayerAge] = useState(18);
-  const [selectedPosition, setSelectedPosition] = useState('');
-  const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedPosition, setSelectedPosition] = useState("");
+  const [selectedCountry, setSelectedCountry] = useState("");
   const [selectedRating, setSelectedRating] = useState(0);
   const [selectedRetireAge, setSelectedRetireAge] = useState(0);
-  const [favoriteClub, setFavoriteClub] = useState('');
-  
+  const [favoriteClub, setFavoriteClub] = useState("");
+
   const [showDraw, setShowDraw] = useState(false);
   const [currentDraw, setCurrentDraw] = useState<{
-    type: 'position' | 'rating' | 'retire',
-    balls: Record<string, number>,
-    title: string
+    type: "position" | "rating" | "retire";
+    balls: Record<string, number>;
+    title: string;
   } | null>(null);
 
   const countries = Object.keys(LEAGUES);
 
   const steps = [
-    'Name & Age',
-    'Starting Country',
-    'Favorite Club',
-    'Position',
-    'Initial Rating',
-    'Retirement Age',
-    'Confirmation'
+    "Name & Age",
+    "Starting Country",
+    "Favorite Club",
+    "Position",
+    "Initial Rating",
+    "Retirement Age",
+    "Confirmation",
   ];
 
   const handleNextStep = () => {
-    setStep(prev => prev + 1);
+    setStep((prev) => prev + 1);
   };
 
   const handlePositionDraw = () => {
     const balls: Record<string, number> = {};
-    POSITIONS.forEach(pos => {
+    POSITIONS.forEach((pos) => {
       balls[pos] = 1;
     });
-    
+
     setCurrentDraw({
-      type: 'position',
+      type: "position",
       balls,
-      title: 'Draw Your Position'
+      title: "Draw Your Position",
     });
     setShowDraw(true);
   };
 
-
   const handleRatingDraw = () => {
     const ratingBalls = {
-      '55': 5,
-      '60': 6,
-      '65': 4,
-      '70': 6,
-      '74': 5,
-      '79': 3,
-      '83': 2,
-      '88': 1,
-      '93': 1,
-      '99': 1
+      "55": 5,
+      "60": 6,
+      "65": 4,
+      "70": 6,
+      "74": 5,
+      "79": 3,
+      "83": 2,
+      "88": 1,
+      "93": 1,
+      "99": 1,
     };
-    
+
     setCurrentDraw({
-      type: 'rating',
+      type: "rating",
       balls: ratingBalls,
-      title: 'Draw Your Initial Rating'
+      title: "Draw Your Initial Rating",
     });
     setShowDraw(true);
   };
@@ -87,30 +88,30 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
     for (let age = 35; age <= 40; age++) {
       retireBalls[age.toString()] = 2;
     }
-    
+
     setCurrentDraw({
-      type: 'retire',
+      type: "retire",
       balls: retireBalls,
-      title: 'Draw Your Retirement Age'
+      title: "Draw Your Retirement Age",
     });
     setShowDraw(true);
   };
 
   const handleDrawComplete = (result: string) => {
     if (!currentDraw) return;
-    
+
     switch (currentDraw.type) {
-      case 'position':
+      case "position":
         setSelectedPosition(result);
         break;
-      case 'rating':
+      case "rating":
         setSelectedRating(parseInt(result));
         break;
-      case 'retire':
+      case "retire":
         setSelectedRetireAge(parseInt(result));
         break;
     }
-    
+
     setShowDraw(false);
     setCurrentDraw(null);
     handleNextStep();
@@ -123,7 +124,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
       selectedCountry,
       playerAge,
       selectedRating,
-      favoriteClub
+      favoriteClub,
     );
     player.retireAt = selectedRetireAge;
     onPlayerCreated(player);
@@ -131,8 +132,10 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
 
   const getAvailableClubs = () => {
     if (!selectedCountry) return [];
-    const topLeague = LEAGUES[selectedCountry]?.[0]?.name || '';
-    return CLUBS[selectedCountry]?.filter(club => club.league === topLeague) || [];
+    const topLeague = LEAGUES[selectedCountry]?.[0]?.name || "";
+    return (
+      CLUBS[selectedCountry]?.filter((club) => club.league === topLeague) || []
+    );
   };
 
   return (
@@ -149,7 +152,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
                   <div
                     key={index}
                     className={`w-3 h-3 rounded-full ${
-                      index <= step ? 'bg-green-600' : 'bg-gray-300'
+                      index <= step ? "bg-green-600" : "bg-gray-300"
                     }`}
                   />
                 ))}
@@ -164,7 +167,10 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
             {step === 0 && (
               <div className="space-y-4">
                 <div>
-                  <Label htmlFor="name" className="text-green-800 font-semibold">
+                  <Label
+                    htmlFor="name"
+                    className="text-green-800 font-semibold"
+                  >
                     Player Name
                   </Label>
                   <Input
@@ -185,11 +191,13 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
                     min="16"
                     max="31"
                     value={playerAge}
-                    onChange={(e) => setPlayerAge(parseInt(e.target.value) || 18)}
+                    onChange={(e) =>
+                      setPlayerAge(parseInt(e.target.value) || 18)
+                    }
                     className="mt-1"
                   />
                 </div>
-                <Button 
+                <Button
                   onClick={handleNextStep}
                   disabled={!playerName.trim()}
                   className="w-full bg-green-600 hover:bg-green-700"
@@ -208,9 +216,11 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
                   {countries.map((country) => (
                     <Button
                       key={country}
-                      variant={selectedCountry === country ? "default" : "outline"}
+                      variant={
+                        selectedCountry === country ? "default" : "outline"
+                      }
                       onClick={() => setSelectedCountry(country)}
-                      className={`text-sm ${selectedCountry === country ? 'bg-green-600 text-white' : 'hover:bg-green-50'}`}
+                      className={`text-sm ${selectedCountry === country ? "bg-green-600 text-white" : "hover:bg-green-50"}`}
                     >
                       {country}
                     </Button>
@@ -229,18 +239,20 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
             {step === 2 && (
               <div className="space-y-4">
                 <Label className="text-green-800 font-semibold">
-                  Choose Your Favorite Club in {selectedCountry || '—'}
+                  Choose Your Favorite Club in {selectedCountry || "—"}
                 </Label>
                 <div className="grid grid-cols-1 gap-2 max-h-64 overflow-y-auto">
                   {getAvailableClubs().map((club) => (
                     <Button
                       key={club.club}
-                      variant={favoriteClub === club.club ? "default" : "outline"}
+                      variant={
+                        favoriteClub === club.club ? "default" : "outline"
+                      }
                       onClick={() => setFavoriteClub(club.club)}
                       className={`text-left justify-start text-sm ${
                         favoriteClub === club.club
-                          ? 'bg-green-600 text-white'
-                          : 'hover:bg-green-50'
+                          ? "bg-green-600 text-white"
+                          : "hover:bg-green-50"
                       }`}
                     >
                       {club.club} (Strength: {club.strength})
@@ -259,7 +271,9 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
 
             {step === 3 && (
               <div className="text-center space-y-4">
-                <p className="text-green-800">Let's see what position you'll play!</p>
+                <p className="text-green-800">
+                  Let's see what position you'll play!
+                </p>
                 <Button
                   onClick={handlePositionDraw}
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
@@ -279,7 +293,9 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
 
             {step === 4 && (
               <div className="text-center space-y-4">
-                <p className="text-green-800">What rating will you start with?</p>
+                <p className="text-green-800">
+                  What rating will you start with?
+                </p>
                 <Button
                   onClick={handleRatingDraw}
                   className="bg-green-600 hover:bg-green-700 text-white px-8 py-3"
@@ -325,7 +341,9 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
                 <div className="bg-green-50 p-6 rounded-lg space-y-3">
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="font-semibold text-green-800">Name:</span>
+                      <span className="font-semibold text-green-800">
+                        Name:
+                      </span>
                       <p>{playerName}</p>
                     </div>
                     <div>
@@ -333,28 +351,38 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
                       <p>{playerAge} years old</p>
                     </div>
                     <div>
-                      <span className="font-semibold text-green-800">Position:</span>
+                      <span className="font-semibold text-green-800">
+                        Position:
+                      </span>
                       <p>{selectedPosition}</p>
                     </div>
                     <div>
-                      <span className="font-semibold text-green-800">Country:</span>
+                      <span className="font-semibold text-green-800">
+                        Country:
+                      </span>
                       <p>{selectedCountry}</p>
                     </div>
                     <div className="sm:col-span-2">
-                      <span className="font-semibold text-green-800">Favorite Club:</span>
+                      <span className="font-semibold text-green-800">
+                        Favorite Club:
+                      </span>
                       <p>{favoriteClub}</p>
                     </div>
                     <div>
-                      <span className="font-semibold text-green-800">Rating:</span>
+                      <span className="font-semibold text-green-800">
+                        Rating:
+                      </span>
                       <p>{selectedRating}</p>
                     </div>
                     <div>
-                      <span className="font-semibold text-green-800">Retirement:</span>
+                      <span className="font-semibold text-green-800">
+                        Retirement:
+                      </span>
                       <p>{selectedRetireAge} years old</p>
                     </div>
                   </div>
                 </div>
-                <Button 
+                <Button
                   onClick={handleCreatePlayer}
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
                   size="lg"
@@ -369,7 +397,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
 
       <BallDraw
         balls={currentDraw?.balls || {}}
-        title={currentDraw?.title || ''}
+        title={currentDraw?.title || ""}
         onComplete={handleDrawComplete}
         isVisible={showDraw}
       />

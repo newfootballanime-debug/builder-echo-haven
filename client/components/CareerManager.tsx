@@ -1,24 +1,50 @@
-import { useState, useEffect, useRef } from 'react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import BallDraw from './BallDraw';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { useState, useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import {
-  Player, Club, CareerHistory, PlayerStats
-} from '@/lib/types';
-import { LEAGUES } from '@/lib/gameData';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import BallDraw from "./BallDraw";
 import {
-  getLeague, getLeagueClubs, draftClub, isInFirstEleven,
-  generateSeasonStats, calculateSalary, calculateMarketValue,
-  simulateCup, simulateEuropean, formatCurrency, randomInt,
-  getEuropeanSlots, getCountryRank, simulateGlobalWinners,
-  gaussianWeight, getPromotionRelegationCounts, getLeagueIndex,
-  generateRandomName, generatePlayerName
-} from '@/lib/gameLogic';
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Player, Club, CareerHistory, PlayerStats } from "@/lib/types";
+import { LEAGUES } from "@/lib/gameData";
+import {
+  getLeague,
+  getLeagueClubs,
+  draftClub,
+  isInFirstEleven,
+  generateSeasonStats,
+  calculateSalary,
+  calculateMarketValue,
+  simulateCup,
+  simulateEuropean,
+  formatCurrency,
+  randomInt,
+  getEuropeanSlots,
+  getCountryRank,
+  simulateGlobalWinners,
+  gaussianWeight,
+  getPromotionRelegationCounts,
+  getLeagueIndex,
+  generateRandomName,
+  generatePlayerName,
+} from "@/lib/gameLogic";
 
 interface CareerManagerProps {
   player: Player;
@@ -26,44 +52,65 @@ interface CareerManagerProps {
   onRetirement: (player: Player) => void;
 }
 
-export default function CareerManager({ player, onPlayerUpdate, onRetirement }: CareerManagerProps) {
+export default function CareerManager({
+  player,
+  onPlayerUpdate,
+  onRetirement,
+}: CareerManagerProps) {
   const [currentPlayer, setCurrentPlayer] = useState<Player>(player);
   const [showDraw, setShowDraw] = useState(false);
   const [currentDraw, setCurrentDraw] = useState<{
-    type: 'evolution' | 'league' | 'cup' | 'european',
-    balls: Record<string, number>,
-    title: string,
-    onComplete?: (result: string) => void
+    type: "evolution" | "league" | "cup" | "european";
+    balls: Record<string, number>;
+    title: string;
+    onComplete?: (result: string) => void;
   } | null>(null);
   const [seasonInProgress, setSeasonInProgress] = useState(false);
   const [firstSeasonHandled, setFirstSeasonHandled] = useState(false);
   const [seasonResults, setSeasonResults] = useState<{
-    league: { position: number, total: number },
-    cup: { phase: string, details: string[] },
-    european?: { phase: string, details: string[], prize: number },
-    evolution: number,
-    stats: PlayerStats,
-    trophies: string[],
-    globalWinners?: Record<string, string>,
-    standings?: Record<string, string[]>,
-    topXILeague?: { position: string, player: string, club: string }[],
-    topXIGlobal?: { position: string, player: string, club: string, country: string }[],
-    transfers?: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[]
+    league: { position: number; total: number };
+    cup: { phase: string; details: string[] };
+    european?: { phase: string; details: string[]; prize: number };
+    evolution: number;
+    stats: PlayerStats;
+    trophies: string[];
+    globalWinners?: Record<string, string>;
+    standings?: Record<string, string[]>;
+    topXILeague?: { position: string; player: string; club: string }[];
+    topXIGlobal?: {
+      position: string;
+      player: string;
+      club: string;
+      country: string;
+    }[];
+    transfers?: {
+      player: string;
+      from: string;
+      to: string;
+      fee: number;
+      type: "domestic" | "external";
+    }[];
   } | null>(null);
   const [standingsKey, setStandingsKey] = useState<string | null>(null);
 
   const [offerOpen, setOfferOpen] = useState(false);
   const nextDrawQueued = useRef(false);
   const [pendingOffer, setPendingOffer] = useState<{
-    type: 'external' | 'domestic' | 'loan' | 'renewal' | 'signing',
-    club: Club,
-    salary: number,
-    contractYears: number
+    type: "external" | "domestic" | "loan" | "renewal" | "signing";
+    club: Club;
+    salary: number;
+    contractYears: number;
   } | null>(null);
   const [transferAttemptsLeft, setTransferAttemptsLeft] = useState<number>(3);
-  const [clubStrengthDelta, setClubStrengthDelta] = useState<Record<string, Record<string, number>>>({});
-  const [clubBudgetDelta, setClubBudgetDelta] = useState<Record<string, Record<string, number>>>({});
-  const [clubLeagueOverride, setClubLeagueOverride] = useState<Record<string, Record<string, string>>>({});
+  const [clubStrengthDelta, setClubStrengthDelta] = useState<
+    Record<string, Record<string, number>>
+  >({});
+  const [clubBudgetDelta, setClubBudgetDelta] = useState<
+    Record<string, Record<string, number>>
+  >({});
+  const [clubLeagueOverride, setClubLeagueOverride] = useState<
+    Record<string, Record<string, string>>
+  >({});
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
@@ -77,28 +124,40 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           clubLeagueOverride,
         },
       };
-      localStorage.setItem('careerSaveV1', JSON.stringify(payload));
+      localStorage.setItem("careerSaveV1", JSON.stringify(payload));
     } catch {}
-  }, [currentPlayer, onPlayerUpdate, clubStrengthDelta, clubBudgetDelta, clubLeagueOverride]);
+  }, [
+    currentPlayer,
+    onPlayerUpdate,
+    clubStrengthDelta,
+    clubBudgetDelta,
+    clubLeagueOverride,
+  ]);
 
   // Initialize selected standings key when results change
   useEffect(() => {
     if (seasonResults?.standings) {
       const keys = Object.keys(seasonResults.standings);
-      if (keys.length) setStandingsKey(prev => prev && keys.includes(prev) ? prev : keys[0]);
+      if (keys.length)
+        setStandingsKey((prev) =>
+          prev && keys.includes(prev) ? prev : keys[0],
+        );
     }
   }, [seasonResults?.standings]);
 
   // Load dynamic meta if continuing a career
   useEffect(() => {
     try {
-      const raw = localStorage.getItem('careerSaveV1');
+      const raw = localStorage.getItem("careerSaveV1");
       if (raw) {
         const parsed = JSON.parse(raw);
         if (parsed?.meta) {
-          if (parsed.meta.clubStrengthDelta) setClubStrengthDelta(parsed.meta.clubStrengthDelta);
-          if (parsed.meta.clubBudgetDelta) setClubBudgetDelta(parsed.meta.clubBudgetDelta);
-          if (parsed.meta.clubLeagueOverride) setClubLeagueOverride(parsed.meta.clubLeagueOverride);
+          if (parsed.meta.clubStrengthDelta)
+            setClubStrengthDelta(parsed.meta.clubStrengthDelta);
+          if (parsed.meta.clubBudgetDelta)
+            setClubBudgetDelta(parsed.meta.clubBudgetDelta);
+          if (parsed.meta.clubLeagueOverride)
+            setClubLeagueOverride(parsed.meta.clubLeagueOverride);
         }
       }
     } catch {}
@@ -106,29 +165,53 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
   // Auto-sign with a club in Season 1 (like the Python flow)
   useEffect(() => {
-    if (!firstSeasonHandled && !currentPlayer.club && currentPlayer.season === 1 && !seasonInProgress && !showDraw) {
+    if (
+      !firstSeasonHandled &&
+      !currentPlayer.club &&
+      currentPlayer.season === 1 &&
+      !seasonInProgress &&
+      !showDraw
+    ) {
       setFirstSeasonHandled(true);
       findNewClub();
     }
-  }, [firstSeasonHandled, currentPlayer.club, currentPlayer.season, seasonInProgress, showDraw]);
+  }, [
+    firstSeasonHandled,
+    currentPlayer.club,
+    currentPlayer.season,
+    seasonInProgress,
+    showDraw,
+  ]);
 
   // Start simulation when a club + league exist and a season is in progress
   useEffect(() => {
-    if (seasonInProgress && currentPlayer.club && currentPlayer.league && !showDraw && !seasonResults) {
+    if (
+      seasonInProgress &&
+      currentPlayer.club &&
+      currentPlayer.league &&
+      !showDraw &&
+      !seasonResults
+    ) {
       simulateSeason();
     }
-  }, [seasonInProgress, currentPlayer.club, currentPlayer.league, showDraw, seasonResults]);
+  }, [
+    seasonInProgress,
+    currentPlayer.club,
+    currentPlayer.league,
+    showDraw,
+    seasonResults,
+  ]);
 
   const updatePlayer = (updates: Partial<Player>) => {
-    setCurrentPlayer(prev => ({ ...prev, ...updates }));
+    setCurrentPlayer((prev) => ({ ...prev, ...updates }));
   };
 
   const pickWeighted = (clubs: Club[], rating: number): Club => {
-    const weights = clubs.map(c => {
+    const weights = clubs.map((c) => {
       const delta = Math.abs(c.strength - rating);
       return Math.max(1, 26 - Math.min(20, delta));
     });
-    const total = weights.reduce((a,b) => a+b, 0);
+    const total = weights.reduce((a, b) => a + b, 0);
     let r = Math.random() * total;
     for (let i = 0; i < clubs.length; i++) {
       r -= weights[i];
@@ -137,7 +220,11 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     return clubs[clubs.length - 1];
   };
 
-  const proposeOffer = (type: 'external'|'domestic'|'loan'|'renewal'|'signing', club: Club, years: number) => {
+  const proposeOffer = (
+    type: "external" | "domestic" | "loan" | "renewal" | "signing",
+    club: Club,
+    years: number,
+  ) => {
     const salary = calculateSalary(currentPlayer, club);
     setPendingOffer({ type, club, salary, contractYears: years });
     setOfferOpen(true);
@@ -147,7 +234,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     if (!pendingOffer) return;
     const c = pendingOffer.club;
     let updates: Partial<Player>;
-    if (pendingOffer.type === 'renewal') {
+    if (pendingOffer.type === "renewal") {
       updates = {
         salary: pendingOffer.salary,
         contractYears: Math.max(2, currentPlayer.contractYears + 1),
@@ -158,59 +245,78 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         league: c.league,
         country: c.country,
         salary: pendingOffer.salary,
-        contractYears: pendingOffer.type === 'loan' ? Math.max(1, currentPlayer.contractYears) : pendingOffer.contractYears,
-        isOnLoan: pendingOffer.type === 'loan'
+        contractYears:
+          pendingOffer.type === "loan"
+            ? Math.max(1, currentPlayer.contractYears)
+            : pendingOffer.contractYears,
+        isOnLoan: pendingOffer.type === "loan",
       };
     }
     updatePlayer(updates);
     setOfferOpen(false);
     setPendingOffer(null);
-    if (pendingOffer.type === 'signing') setSeasonInProgress(true);
+    if (pendingOffer.type === "signing") setSeasonInProgress(true);
   };
 
   const requestDomesticTransfer = () => {
     if (transferAttemptsLeft <= 0) return;
     if (!currentPlayer.country || !currentPlayer.league) return;
-    const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
+    const pool = getLeagueClubs(
+      currentPlayer.country,
+      currentPlayer.league,
+    ).filter((c) => c.name !== currentPlayer.club);
     if (!pool.length) return;
     const chosen = pickWeighted(pool, currentPlayer.rating);
-    setTransferAttemptsLeft(v=>v-1);
-    proposeOffer('domestic', chosen, 3);
+    setTransferAttemptsLeft((v) => v - 1);
+    proposeOffer("domestic", chosen, 3);
   };
 
   const requestExternalTransfer = () => {
     if (transferAttemptsLeft <= 0) return;
     const countries = Object.keys(LEAGUES);
     let candidates: Club[] = [];
-    countries.forEach(country => {
+    countries.forEach((country) => {
       const topLeague = getLeague(0, country);
       candidates = candidates.concat(
-        getLeagueClubs(country, topLeague).filter(c => !(country === currentPlayer.country && c.name === currentPlayer.club))
+        getLeagueClubs(country, topLeague).filter(
+          (c) =>
+            !(
+              country === currentPlayer.country && c.name === currentPlayer.club
+            ),
+        ),
       );
     });
     if (!candidates.length) return;
     const chosen = pickWeighted(candidates, currentPlayer.rating);
-    setTransferAttemptsLeft(v=>v-1);
-    proposeOffer('external', chosen, 3);
+    setTransferAttemptsLeft((v) => v - 1);
+    proposeOffer("external", chosen, 3);
   };
 
   const requestLoan = () => {
     if (transferAttemptsLeft <= 0) return;
     if (!currentPlayer.country || !currentPlayer.league) return;
-    const pool = getLeagueClubs(currentPlayer.country, currentPlayer.league).filter(c => c.name !== currentPlayer.club);
+    const pool = getLeagueClubs(
+      currentPlayer.country,
+      currentPlayer.league,
+    ).filter((c) => c.name !== currentPlayer.club);
     if (!pool.length) return;
     const chosen = pickWeighted(pool, currentPlayer.rating);
-    setTransferAttemptsLeft(v=>v-1);
-    proposeOffer('loan', chosen, 1);
+    setTransferAttemptsLeft((v) => v - 1);
+    proposeOffer("loan", chosen, 1);
   };
 
   const requestNewContract = () => {
     if (!currentPlayer.club || !currentPlayer.league) return;
     const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
-    const club = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
+    const club = clubs.find((c) => c.name === currentPlayer.club) || clubs[0];
     if (!club) return;
     const newSalary = Math.floor(calculateSalary(currentPlayer, club) * 1.1);
-    setPendingOffer({ type: 'renewal', club, salary: newSalary, contractYears: Math.max(2, currentPlayer.contractYears + 1) });
+    setPendingOffer({
+      type: "renewal",
+      club,
+      salary: newSalary,
+      contractYears: Math.max(2, currentPlayer.contractYears + 1),
+    });
     setOfferOpen(true);
   };
 
@@ -228,12 +334,12 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const newAge = currentPlayer.age + 1;
     const newSeason = currentPlayer.season + 1;
     const newContractYears = Math.max(0, currentPlayer.contractYears - 1);
-    
-    updatePlayer({ 
-      age: newAge, 
-      season: newSeason, 
+
+    updatePlayer({
+      age: newAge,
+      season: newSeason,
       contractYears: newContractYears,
-      playedU21ThisSeason: false 
+      playedU21ThisSeason: false,
     });
 
     // Check if needs new club
@@ -255,7 +361,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       currentPlayer.rating,
       league,
       undefined,
-      currentPlayer.favoriteClub
+      currentPlayer.favoriteClub,
     );
 
     // Fallback to top league if no club in current league
@@ -266,7 +372,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         currentPlayer.rating,
         league,
         undefined,
-        currentPlayer.favoriteClub
+        currentPlayer.favoriteClub,
       );
     }
 
@@ -281,20 +387,42 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     if (club) {
       // Show signing offer instead of auto-assigning
       setSeasonInProgress(false);
-      setPendingOffer({ type: 'signing', club, salary: calculateSalary(currentPlayer, club), contractYears: 2 });
+      setPendingOffer({
+        type: "signing",
+        club,
+        salary: calculateSalary(currentPlayer, club),
+        contractYears: 2,
+      });
       setOfferOpen(true);
     } else {
       // Last resort generic assignment in top league (as signing)
       const topLeague = getLeague(0, country);
-      const genericClub: Club = { name: 'Generic Club', country, league: topLeague, strength: Math.max(60, currentPlayer.rating + 5), budget: 10000000, europeanComp: '' };
+      const genericClub: Club = {
+        name: "Generic Club",
+        country,
+        league: topLeague,
+        strength: Math.max(60, currentPlayer.rating + 5),
+        budget: 10000000,
+        europeanComp: "",
+      };
       setSeasonInProgress(false);
-      setPendingOffer({ type: 'signing', club: genericClub, salary: calculateSalary(currentPlayer, genericClub), contractYears: 2 });
+      setPendingOffer({
+        type: "signing",
+        club: genericClub,
+        salary: calculateSalary(currentPlayer, genericClub),
+        contractYears: 2,
+      });
       setOfferOpen(true);
     }
   };
 
   // Player impact on team strength and transfer helpers
-  const effectiveStrength = (club: Club, player: Player, isStarter: boolean, evolution: number): number => {
+  const effectiveStrength = (
+    club: Club,
+    player: Player,
+    isStarter: boolean,
+    evolution: number,
+  ): number => {
     let boost = 0;
     if (isStarter) {
       boost += Math.max(0, player.rating - club.strength) * 0.3;
@@ -307,40 +435,80 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     return generatePlayerName(country);
   };
 
-  const simulateTransfers = (country: string, currentLeague: string, currentClubName: string): { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[] => {
+  const simulateTransfers = (
+    country: string,
+    currentLeague: string,
+    currentClubName: string,
+  ): {
+    player: string;
+    from: string;
+    to: string;
+    fee: number;
+    type: "domestic" | "external";
+  }[] => {
     const l1 = getLeague(0, country);
     const l2 = getLeague(1, country);
     const pool: Club[] = [
       ...getLeagueClubs(country, l1),
-      ...(l2 ? getLeagueClubs(country, l2) : [])
+      ...(l2 ? getLeagueClubs(country, l2) : []),
     ];
-    const transfers: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[] = [];
+    const transfers: {
+      player: string;
+      from: string;
+      to: string;
+      fee: number;
+      type: "domestic" | "external";
+    }[] = [];
     if (pool.length < 2) return transfers;
 
     const n = randomInt(5, 10);
-    for (let i=0;i<n;i++) {
-      const from = pool[randomInt(0, pool.length-1)];
-      let to = pool[randomInt(0, pool.length-1)];
-      if (to.name === from.name) to = pool[(pool.indexOf(from)+1)%pool.length];
-      const feeBase = Math.max(500000, ((from.strength + to.strength)/2 - 50) ** 2 * 20000);
-      const fee = Math.round(feeBase * (0.8 + Math.random()*0.6));
+    for (let i = 0; i < n; i++) {
+      const from = pool[randomInt(0, pool.length - 1)];
+      let to = pool[randomInt(0, pool.length - 1)];
+      if (to.name === from.name)
+        to = pool[(pool.indexOf(from) + 1) % pool.length];
+      const feeBase = Math.max(
+        500000,
+        ((from.strength + to.strength) / 2 - 50) ** 2 * 20000,
+      );
+      const fee = Math.round(feeBase * (0.8 + Math.random() * 0.6));
       const player = generateClubPlayerName(to.country);
-      transfers.push({ player, from: from.name, to: to.name, fee, type: 'domestic' });
+      transfers.push({
+        player,
+        from: from.name,
+        to: to.name,
+        fee,
+        type: "domestic",
+      });
     }
 
     const extCount = randomInt(1, 3);
-    for (let i=0;i<extCount;i++) {
-      const to = pool[randomInt(0, pool.length-1)];
+    for (let i = 0; i < extCount; i++) {
+      const to = pool[randomInt(0, pool.length - 1)];
       const player = generateClubPlayerName(to.country);
-      const fee = Math.round((to.strength - 40) ** 2 * 30000 * (0.8 + Math.random()*0.6));
-      transfers.push({ player, from: 'Abroad', to: to.name, fee, type: 'external' });
+      const fee = Math.round(
+        (to.strength - 40) ** 2 * 30000 * (0.8 + Math.random() * 0.6),
+      );
+      transfers.push({
+        player,
+        from: "Abroad",
+        to: to.name,
+        fee,
+        type: "external",
+      });
     }
 
     if (Math.random() < 0.6) {
-      const to = pool.find(c=>c.name===currentClubName) || pool[0];
-      const from = pool.find(c=>c.name!==to.name) || pool[1];
+      const to = pool.find((c) => c.name === currentClubName) || pool[0];
+      const from = pool.find((c) => c.name !== to.name) || pool[1];
       const fee = Math.round((to.strength - 45) ** 2 * 28000);
-      transfers.push({ player: generateClubPlayerName(to.country), from: from.name, to: to.name, fee, type: 'domestic' });
+      transfers.push({
+        player: generateClubPlayerName(to.country),
+        from: from.name,
+        to: to.name,
+        fee,
+        type: "domestic",
+      });
     }
 
     return transfers;
@@ -349,40 +517,55 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   const getAdjustedClubs = (country: string, league: string): Club[] => {
     const leagues = LEAGUES[country] || [];
     let all: Club[] = [];
-    leagues.forEach(l => { all = all.concat(getLeagueClubs(country, l.name)); });
+    leagues.forEach((l) => {
+      all = all.concat(getLeagueClubs(country, l.name));
+    });
     const over = clubLeagueOverride[country] || {};
     const sDelta = clubStrengthDelta[country] || {};
     const bDelta = clubBudgetDelta[country] || {};
     return all
-      .filter(c => (over[c.name] ?? c.league) === league)
-      .map(c => ({
+      .filter((c) => (over[c.name] ?? c.league) === league)
+      .map((c) => ({
         ...c,
         league,
-        strength: Math.max(40, Math.min(99, Math.round(c.strength + (sDelta[c.name] || 0)))),
-        budget: Math.max(0, Math.round(c.budget + (bDelta[c.name] || 0)))
+        strength: Math.max(
+          40,
+          Math.min(99, Math.round(c.strength + (sDelta[c.name] || 0))),
+        ),
+        budget: Math.max(0, Math.round(c.budget + (bDelta[c.name] || 0))),
       }));
   };
 
-  const applyTransfersToAdjustments = (country: string, transfers: { player: string; from: string; to: string; fee: number; type: 'domestic'|'external' }[]) => {
+  const applyTransfersToAdjustments = (
+    country: string,
+    transfers: {
+      player: string;
+      from: string;
+      to: string;
+      fee: number;
+      type: "domestic" | "external";
+    }[],
+  ) => {
     if (!transfers.length) return;
-    setClubStrengthDelta(prev => {
+    setClubStrengthDelta((prev) => {
       const copy = { ...prev } as typeof prev;
       copy[country] = { ...(copy[country] || {}) };
-      transfers.forEach(t => {
+      transfers.forEach((t) => {
         const inc = Math.min(3, Math.max(1, Math.round(t.fee / 15000000)));
         copy[country][t.to] = (copy[country][t.to] || 0) + inc;
-        if (t.from !== 'Abroad') {
+        if (t.from !== "Abroad") {
           copy[country][t.from] = (copy[country][t.from] || 0) - 1;
         }
       });
       return copy;
     });
-    setClubBudgetDelta(prev => {
+    setClubBudgetDelta((prev) => {
       const copy = { ...prev } as typeof prev;
       copy[country] = { ...(copy[country] || {}) };
-      transfers.forEach(t => {
+      transfers.forEach((t) => {
         copy[country][t.to] = (copy[country][t.to] || 0) - t.fee;
-        if (t.from !== 'Abroad') copy[country][t.from] = (copy[country][t.from] || 0) + t.fee;
+        if (t.from !== "Abroad")
+          copy[country][t.from] = (copy[country][t.from] || 0) + t.fee;
       });
       return copy;
     });
@@ -400,16 +583,17 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       }
     }
 
-    let currentClub = clubs.find(c => c.name === currentPlayer.club) || clubs[0];
+    let currentClub =
+      clubs.find((c) => c.name === currentPlayer.club) || clubs[0];
     if (!currentClub) {
       // Create generic club if absolutely none available
       const genericClub = {
-        name: 'Generic Club',
+        name: "Generic Club",
         country: currentPlayer.country,
         league: getLeague(0, currentPlayer.country),
         strength: Math.max(60, currentPlayer.rating + 5),
         budget: 10000000,
-        europeanComp: ''
+        europeanComp: "",
       } as Club;
       clubs = [genericClub];
       currentClub = genericClub;
@@ -422,81 +606,152 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     const isStarter = isInFirstEleven(currentPlayer, currentClub);
 
     // 1) Evolution draw
-    const evolutionBalls = { '5': 1, '6': 1, '7': 1, '8': 1, '9': 1, '10': 1 };
+    const evolutionBalls = { "5": 1, "6": 1, "7": 1, "8": 1, "9": 1, "10": 1 };
     setCurrentDraw({
-      type: 'evolution',
+      type: "evolution",
       balls: evolutionBalls,
-      title: 'Your Performance This Season',
+      title: "Your Performance This Season",
       onComplete: (evolution) => {
         const evo = parseInt(evolution);
         // 2) League position draw weighted by effective strength (club + player impact)
         const rankedByEff = [...clubs]
-          .map(c => ({ c, eff: c.name === currentClub.name ? effectiveStrength(currentClub, currentPlayer, isStarter, evo) : c.strength }))
-          .sort((a,b)=> b.eff - a.eff);
-        const expected = Math.max(1, rankedByEff.findIndex(e=>e.c.name===currentClub.name)+1 || Math.ceil(totalTeams/2));
+          .map((c) => ({
+            c,
+            eff:
+              c.name === currentClub.name
+                ? effectiveStrength(currentClub, currentPlayer, isStarter, evo)
+                : c.strength,
+          }))
+          .sort((a, b) => b.eff - a.eff);
+        const expected = Math.max(
+          1,
+          rankedByEff.findIndex((e) => e.c.name === currentClub.name) + 1 ||
+            Math.ceil(totalTeams / 2),
+        );
         const leagueBalls: Record<string, number> = {};
-        const sigmaBase = Math.max(1.1, (100 - effectiveStrength(currentClub, currentPlayer, isStarter, evo)) / 24 + (totalTeams/34));
-        for (let pos=1; pos<=totalTeams; pos++) {
+        const sigmaBase = Math.max(
+          1.1,
+          (100 -
+            effectiveStrength(currentClub, currentPlayer, isStarter, evo)) /
+            24 +
+            totalTeams / 34,
+        );
+        for (let pos = 1; pos <= totalTeams; pos++) {
           const dist = Math.abs(pos - expected);
           const w = gaussianWeight(dist, sigmaBase);
-          const boosted = isStarter ? Math.round(w * (1 + evo/30)) : w;
+          const boosted = isStarter ? Math.round(w * (1 + evo / 30)) : w;
           leagueBalls[String(pos)] = Math.max(1, boosted);
         }
         nextDrawQueued.current = true;
         setCurrentDraw({
-          type: 'league',
+          type: "league",
           balls: leagueBalls,
           title: `League Position Draw (${currentPlayer.league})`,
           onComplete: (posStr) => {
             const leaguePosition = parseInt(posStr);
             // 3) National Cup draw (phase)
-            const phases = ["16-imi","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+            const phases = [
+              "16-imi",
+              "Optimi",
+              "Sferturi",
+              "Semifinale",
+              "Finală",
+              "Câștigător",
+            ];
             const cupBalls: Record<string, number> = {};
-            phases.forEach((ph, i)=>{
-              const w = gaussianWeight(i, Math.max(1.2, (100 - currentClub.strength)/20));
+            phases.forEach((ph, i) => {
+              const w = gaussianWeight(
+                i,
+                Math.max(1.2, (100 - currentClub.strength) / 20),
+              );
               cupBalls[ph] = w;
             });
             nextDrawQueued.current = true;
             setCurrentDraw({
-              type: 'cup',
+              type: "cup",
               balls: cupBalls,
-              title: 'National Cup Draw',
+              title: "National Cup Draw",
               onComplete: (cupPhase) => {
                 const slots = getEuropeanSlots(currentPlayer.country);
-                let competition: 'Champions League' | 'Europa League' | 'Conference League' | null = null;
-                if (currentPlayer.league === getLeague(0, currentPlayer.country)) {
-                  if (leaguePosition <= slots.ucl) competition = 'Champions League';
-                  else if (leaguePosition <= slots.ucl + slots.uel) competition = 'Europa League';
-                  else if (leaguePosition <= slots.ucl + slots.uel + slots.uecl) competition = 'Conference League';
+                let competition:
+                  | "Champions League"
+                  | "Europa League"
+                  | "Conference League"
+                  | null = null;
+                if (
+                  currentPlayer.league === getLeague(0, currentPlayer.country)
+                ) {
+                  if (leaguePosition <= slots.ucl)
+                    competition = "Champions League";
+                  else if (leaguePosition <= slots.ucl + slots.uel)
+                    competition = "Europa League";
+                  else if (leaguePosition <= slots.ucl + slots.uel + slots.uecl)
+                    competition = "Conference League";
                 }
                 if (competition) {
-                  const euroPhases = ["Preliminarii","Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+                  const euroPhases = [
+                    "Preliminarii",
+                    "Grupă",
+                    "Optimi",
+                    "Sferturi",
+                    "Semifinale",
+                    "Finală",
+                    "Câștigător",
+                  ];
                   const euroBalls: Record<string, number> = {};
-                  euroPhases.forEach((ph, i)=>{
-                    const base = competition==='Champions League'?6: competition==='Europa League'?5:4;
-                    const w = gaussianWeight(i, Math.max(1.2, (100 - currentClub.strength)/18)) * (base/4);
+                  euroPhases.forEach((ph, i) => {
+                    const base =
+                      competition === "Champions League"
+                        ? 6
+                        : competition === "Europa League"
+                          ? 5
+                          : 4;
+                    const w =
+                      gaussianWeight(
+                        i,
+                        Math.max(1.2, (100 - currentClub.strength) / 18),
+                      ) *
+                      (base / 4);
                     euroBalls[ph] = Math.max(1, Math.round(w));
                   });
                   nextDrawQueued.current = true;
                   setCurrentDraw({
-                    type: 'european',
+                    type: "european",
                     balls: euroBalls,
                     title: `${competition} Draw`,
-                    onComplete: (euroPhase)=>{
-                      continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter, cupPhase, competition!, euroPhase);
-                    }
+                    onComplete: (euroPhase) => {
+                      continueSeasonSimulation(
+                        currentClub,
+                        leaguePosition,
+                        totalTeams,
+                        evo,
+                        isStarter,
+                        cupPhase,
+                        competition!,
+                        euroPhase,
+                      );
+                    },
                   });
                   setShowDraw(true);
                 } else {
-                  continueSeasonSimulation(currentClub, leaguePosition, totalTeams, evo, isStarter, cupPhase, null, null);
+                  continueSeasonSimulation(
+                    currentClub,
+                    leaguePosition,
+                    totalTeams,
+                    evo,
+                    isStarter,
+                    cupPhase,
+                    null,
+                    null,
+                  );
                 }
-              }
+              },
             });
             setShowDraw(true);
-          }
+          },
         });
         setShowDraw(true);
-      }
+      },
     });
     setShowDraw(true);
   };
@@ -508,17 +763,32 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     evolution: number,
     isStarter: boolean,
     cupPhase?: string | null,
-    euroComp?: 'Champions League' | 'Europa League' | 'Conference League' | null,
-    euroPhase?: string | null
+    euroComp?:
+      | "Champions League"
+      | "Europa League"
+      | "Conference League"
+      | null,
+    euroPhase?: string | null,
   ) => {
     // Generate stats
-    const stats = generateSeasonStats(currentPlayer, club, isStarter, evolution);
-    
+    const stats = generateSeasonStats(
+      currentPlayer,
+      club,
+      isStarter,
+      evolution,
+    );
+
     // Cup result (from draw if provided)
-    const cupResult = cupPhase ? { phase: cupPhase, details: [] as string[] } : simulateCup(club, currentPlayer.country);
+    const cupResult = cupPhase
+      ? { phase: cupPhase, details: [] as string[] }
+      : simulateCup(club, currentPlayer.country);
 
     // European result (from draw if provided)
-    let europeanResult = null as null | { phase: string, details: string[], prize: number };
+    let europeanResult = null as null | {
+      phase: string;
+      details: string[];
+      prize: number;
+    };
     if (euroComp && euroPhase) {
       europeanResult = { phase: euroPhase, details: [], prize: 0 };
     }
@@ -537,7 +807,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
     // Update player attributes and rating
     updatePlayerAttributes(evolution);
-    
+
     // Update career history
     const careerEntry: CareerHistory = {
       season: currentPlayer.season,
@@ -548,92 +818,140 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       marketValue: calculateMarketValue(currentPlayer, club, stats),
       attributes: { ...currentPlayer.attributes },
       stats,
-      trophies
+      trophies,
     };
 
     updatePlayer({
       stats,
       salary: careerEntry.salary,
       marketValue: careerEntry.marketValue,
-      career: [...currentPlayer.career, careerEntry]
+      career: [...currentPlayer.career, careerEntry],
     });
 
     const countries = Object.keys(LEAGUES);
     const standings: Record<string, string[]> = {};
 
     // Player's league table honoring the drawn position
-    const currentLeagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    const currentLeagueClubs = getLeagueClubs(
+      currentPlayer.country,
+      currentPlayer.league,
+    );
     if (currentLeagueClubs.length) {
       const withEff = currentLeagueClubs
-        .map(c => ({ c, eff: c.name === club.name ? effectiveStrength(club, currentPlayer, isStarter, evolution) : c.strength }))
-        .sort((a,b)=> b.eff - a.eff)
-        .map(e => e.c.name);
+        .map((c) => ({
+          c,
+          eff:
+            c.name === club.name
+              ? effectiveStrength(club, currentPlayer, isStarter, evolution)
+              : c.strength,
+        }))
+        .sort((a, b) => b.eff - a.eff)
+        .map((e) => e.c.name);
       const idxMe = withEff.indexOf(club.name);
       if (idxMe !== -1) {
         withEff.splice(idxMe, 1);
-        withEff.splice(Math.min(position-1, withEff.length), 0, club.name);
+        withEff.splice(Math.min(position - 1, withEff.length), 0, club.name);
       }
-      const tableArr = withEff.map(n => {
-        const cc = currentLeagueClubs.find(x=>x.name===n)!;
+      const tableArr = withEff.map((n) => {
+        const cc = currentLeagueClubs.find((x) => x.name === n)!;
         return `${cc.name} • Str ${cc.strength} • ${formatCurrency(cc.budget)}`;
       });
       const rank = getCountryRank(currentPlayer.country);
-      standings[`${currentPlayer.country} • ${currentPlayer.league} (Rank ${rank})`] = tableArr.slice(0, 10);
+      standings[
+        `${currentPlayer.country} • ${currentPlayer.league} (Rank ${rank})`
+      ] = tableArr.slice(0, 10);
     }
 
     // Reference top leagues
-    countries.forEach(ct => {
+    countries.forEach((ct) => {
       const topLeague = getLeague(0, ct);
       const table = getLeagueClubs(ct, topLeague)
-        .sort((a,b)=> b.strength - a.strength)
-        .slice(0,10)
-        .map(c=> `${c.name} • Str ${c.strength} • ${formatCurrency(c.budget)}`);
+        .sort((a, b) => b.strength - a.strength)
+        .slice(0, 10)
+        .map(
+          (c) => `${c.name} • Str ${c.strength} • ${formatCurrency(c.budget)}`,
+        );
       const rank = getCountryRank(ct);
-      standings[`${ct} • ${topLeague} (Rank ${rank})`] = standings[`${ct} • ${topLeague} (Rank ${rank})`] || table;
+      standings[`${ct} • ${topLeague} (Rank ${rank})`] =
+        standings[`${ct} • ${topLeague} (Rank ${rank})`] || table;
     });
 
     // Winners and coefficients update
     const globalWinners: Record<string, string> = simulateGlobalWinners();
     // Build Top XI with generated player names (biased by club country)
-    const leagueClubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+    const leagueClubs = getLeagueClubs(
+      currentPlayer.country,
+      currentPlayer.league,
+    );
     const refClubs = leagueClubs.length
-      ? leagueClubs.sort((a,b)=> b.strength - a.strength)
-      : getLeagueClubs(currentPlayer.country, getLeague(0, currentPlayer.country)).sort((a,b)=> b.strength - a.strength);
-    const order = ['GK','RB','CB','CB','LB','CDM','CM','CAM','RW','LW','ST'];
+      ? leagueClubs.sort((a, b) => b.strength - a.strength)
+      : getLeagueClubs(
+          currentPlayer.country,
+          getLeague(0, currentPlayer.country),
+        ).sort((a, b) => b.strength - a.strength);
+    const order = [
+      "GK",
+      "RB",
+      "CB",
+      "CB",
+      "LB",
+      "CDM",
+      "CM",
+      "CAM",
+      "RW",
+      "LW",
+      "ST",
+    ];
     const safeLen = Math.max(1, refClubs.length);
     const topXILeague = order.map((pos, i) => {
       const club = refClubs[i % safeLen];
       const playerName = generatePlayerName(club?.country);
-      return { position: pos, player: playerName, club: club?.name || '-' };
+      return { position: pos, player: playerName, club: club?.name || "-" };
     });
 
     // Global Top XI from best clubs across countries
     const bestClubs: Club[] = [];
-    Object.keys(LEAGUES).forEach(ct => {
+    Object.keys(LEAGUES).forEach((ct) => {
       const topL = getLeague(0, ct);
       const cs = getLeagueClubs(ct, topL);
-      if (cs.length) bestClubs.push(cs.reduce((a,b)=> (b.strength>a.strength?b:a)));
+      if (cs.length)
+        bestClubs.push(cs.reduce((a, b) => (b.strength > a.strength ? b : a)));
     });
-    bestClubs.sort((a,b)=> b.strength - a.strength);
+    bestClubs.sort((a, b) => b.strength - a.strength);
     const topXIGlobal = order.map((pos, i) => {
       const club = bestClubs[i % Math.max(1, bestClubs.length)];
       const playerName = generatePlayerName(club?.country);
-      return { position: pos, player: playerName, club: club?.name || '-', country: club?.country || '-' };
+      return {
+        position: pos,
+        player: playerName,
+        club: club?.name || "-",
+        country: club?.country || "-",
+      };
     });
 
     // Promotion/Relegation league change for player next season
-    const leagueIdx = getLeagueIndex(currentPlayer.country, currentPlayer.league);
+    const leagueIdx = getLeagueIndex(
+      currentPlayer.country,
+      currentPlayer.league,
+    );
     const { promote, relegate } = getPromotionRelegationCounts(totalTeams);
     let nextLeague = currentPlayer.league;
     if (leagueIdx === 0 && position > totalTeams - relegate) {
       const lower = getLeague(1, currentPlayer.country);
       if (lower) nextLeague = lower;
     } else if (leagueIdx > 0 && position <= promote) {
-      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
+      const upper = getLeague(
+        Math.max(0, leagueIdx - 1),
+        currentPlayer.country,
+      );
       if (upper) nextLeague = upper;
     }
 
-    const transfers = simulateTransfers(currentPlayer.country, currentPlayer.league, currentPlayer.club);
+    const transfers = simulateTransfers(
+      currentPlayer.country,
+      currentPlayer.league,
+      currentPlayer.club,
+    );
     applyTransfersToAdjustments(currentPlayer.country, transfers);
 
     setSeasonResults({
@@ -651,15 +969,17 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     });
 
     if (nextLeague !== currentPlayer.league) {
-      if (leagueIdx > 0 && position <= promote) trophies.push(`⬆️ Promoted to ${nextLeague}`);
-      if (leagueIdx === 0 && position > totalTeams - relegate) trophies.push(`⬇️ Relegated to ${nextLeague}`);
+      if (leagueIdx > 0 && position <= promote)
+        trophies.push(`⬆️ Promoted to ${nextLeague}`);
+      if (leagueIdx === 0 && position > totalTeams - relegate)
+        trophies.push(`⬇️ Relegated to ${nextLeague}`);
       updatePlayer({ league: nextLeague });
-      setClubLeagueOverride(prev => ({
+      setClubLeagueOverride((prev) => ({
         ...prev,
         [currentPlayer.country]: {
           ...(prev[currentPlayer.country] || {}),
           [club.name]: nextLeague,
-        }
+        },
       }));
     }
     setSeasonInProgress(false);
@@ -670,7 +990,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     let ratingChange = 0;
 
     // Update each attribute
-    Object.keys(newAttributes).forEach(attr => {
+    Object.keys(newAttributes).forEach((attr) => {
       let growth = 0;
       if (evolution >= 9) {
         growth = randomInt(2, 4);
@@ -685,23 +1005,37 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
         growth -= randomInt(0, 1);
       }
 
-      newAttributes[attr] = Math.max(40, Math.min(99, newAttributes[attr] + growth));
+      newAttributes[attr] = Math.max(
+        40,
+        Math.min(99, newAttributes[attr] + growth),
+      );
     });
 
     // Calculate new rating
-    const averageAttribute = Object.values(newAttributes).reduce((sum, val) => sum + val, 0) / Object.values(newAttributes).length;
-    
+    const averageAttribute =
+      Object.values(newAttributes).reduce((sum, val) => sum + val, 0) /
+      Object.values(newAttributes).length;
+
     if (evolution >= 9) {
       ratingChange = randomInt(1, 3);
     } else if (evolution <= 6) {
       ratingChange = -randomInt(1, 2);
     }
 
-    const newRating = Math.max(45, Math.min(99, Math.max(currentPlayer.rating + ratingChange, Math.floor(averageAttribute))));
+    const newRating = Math.max(
+      45,
+      Math.min(
+        99,
+        Math.max(
+          currentPlayer.rating + ratingChange,
+          Math.floor(averageAttribute),
+        ),
+      ),
+    );
 
     updatePlayer({
       attributes: newAttributes,
-      rating: newRating
+      rating: newRating,
     });
   };
 
@@ -730,7 +1064,10 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
             <p className="text-xl">
               {currentPlayer.name} retired at age {currentPlayer.age}!
             </p>
-            <Button onClick={() => onRetirement(currentPlayer)} className="bg-blue-600 hover:bg-blue-700">
+            <Button
+              onClick={() => onRetirement(currentPlayer)}
+              className="bg-blue-600 hover:bg-blue-700"
+            >
               View Career Summary
             </Button>
           </CardContent>
@@ -751,17 +1088,20 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   ⚽ {currentPlayer.name}
                 </CardTitle>
                 <p className="text-green-600 text-sm md:text-base">
-                  {currentPlayer.position} • {currentPlayer.age} years old • Rating: {currentPlayer.rating}
+                  {currentPlayer.position} • {currentPlayer.age} years old •
+                  Rating: {currentPlayer.rating}
                 </p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
                 <div>
                   <span className="font-semibold text-green-800">Club:</span>
-                  <p className="break-words">{currentPlayer.club || 'Free agent'}</p>
+                  <p className="break-words">
+                    {currentPlayer.club || "Free agent"}
+                  </p>
                 </div>
                 <div>
                   <span className="font-semibold text-green-800">League:</span>
-                  <p className="break-words">{currentPlayer.league || '-'}</p>
+                  <p className="break-words">{currentPlayer.league || "-"}</p>
                 </div>
                 <div>
                   <span className="font-semibold text-green-800">Salary:</span>
@@ -791,17 +1131,25 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
               </CardHeader>
               <CardContent>
                 {currentPlayer.career.length === 0 ? (
-                  <p className="text-gray-500 text-center">No career history yet.</p>
+                  <p className="text-gray-500 text-center">
+                    No career history yet.
+                  </p>
                 ) : (
                   <div className="space-y-4">
                     {currentPlayer.career.map((entry, index) => (
                       <div key={index} className="border rounded-lg p-4">
                         <div className="flex justify-between items-start mb-2">
                           <div>
-                            <h4 className="font-semibold">Season {entry.season}</h4>
-                            <p className="text-sm text-gray-600">{entry.club} ({entry.league})</p>
+                            <h4 className="font-semibold">
+                              Season {entry.season}
+                            </h4>
+                            <p className="text-sm text-gray-600">
+                              {entry.club} ({entry.league})
+                            </p>
                           </div>
-                          <Badge variant="secondary">Rating: {entry.rating}</Badge>
+                          <Badge variant="secondary">
+                            Rating: {entry.rating}
+                          </Badge>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                           <div>Goals: {entry.stats.goals}</div>
@@ -811,8 +1159,10 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                         </div>
                         {entry.trophies.length > 0 && (
                           <div className="mt-2">
-                            <span className="text-sm font-semibold">Trophies: </span>
-                            {entry.trophies.join(', ')}
+                            <span className="text-sm font-semibold">
+                              Trophies:{" "}
+                            </span>
+                            {entry.trophies.join(", ")}
                           </div>
                         )}
                       </div>
@@ -830,14 +1180,29 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                  {Object.entries(currentPlayer.attributes).map(([attr, value]) => (
-                    <div key={attr} className="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
-                      <span className="font-medium text-sm md:text-base">{attr}</span>
-                      <Badge variant={value >= 80 ? "default" : value >= 70 ? "secondary" : "destructive"}>
-                        {value}
-                      </Badge>
-                    </div>
-                  ))}
+                  {Object.entries(currentPlayer.attributes).map(
+                    ([attr, value]) => (
+                      <div
+                        key={attr}
+                        className="flex justify-between items-center p-3 bg-gray-50 rounded-lg"
+                      >
+                        <span className="font-medium text-sm md:text-base">
+                          {attr}
+                        </span>
+                        <Badge
+                          variant={
+                            value >= 80
+                              ? "default"
+                              : value >= 70
+                                ? "secondary"
+                                : "destructive"
+                          }
+                        >
+                          {value}
+                        </Badge>
+                      </div>
+                    ),
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -846,167 +1211,203 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           <TabsContent value="season" className="space-y-4">
             {seasonResults ? (
               <>
-              <Card className="text-gray-900">
-                <CardHeader>
-                  <CardTitle>Season {currentPlayer.season} Results</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h4 className="font-semibold mb-2">League</h4>
-                    <p>Final position: {seasonResults.league.position}/{seasonResults.league.total}</p>
-                  </div>
-                  <Separator />
-                  <div>
-                    <h4 className="font-semibold mb-2">National Cup</h4>
-                    <p>Best round: {seasonResults.cup.phase}</p>
-                    <div className="text-sm text-gray-600 mt-1">
-                      {seasonResults.cup.details.map((detail, i) => (
-                        <div key={i}>{detail}</div>
-                      ))}
-                    </div>
-                  </div>
-                  {seasonResults.european && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className="font-semibold mb-2">European Competition</h4>
-                        <p>Best round: {seasonResults.european.phase}</p>
-                        <p>Prize money: {formatCurrency(seasonResults.european.prize)}</p>
-                        <div className="text-sm text-gray-600 mt-1">
-                          {seasonResults.european.details.map((detail, i) => (
-                            <div key={i}>{detail}</div>
-                          ))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-                  <Separator />
-                  <div>
-                    <h4 className="font-semibold mb-2">Personal Statistics</h4>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>Goals: {seasonResults.stats.goals}</div>
-                      <div>Assists: {seasonResults.stats.assists}</div>
-                      {seasonResults.stats.cleanSheets && (
-                        <div>Clean Sheets: {seasonResults.stats.cleanSheets}</div>
-                      )}
-                      <div>Performance: {seasonResults.evolution}/10</div>
-                    </div>
-                  </div>
-                  {seasonResults.trophies.length > 0 && (
-                    <>
-                      <Separator />
-                      <div>
-                        <h4 className="font-semibold mb-2">Trophies Won</h4>
-                        <div>{seasonResults.trophies.join(', ')}</div>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-
-              {seasonResults.transfers && seasonResults.transfers.length > 0 && (
                 <Card className="text-gray-900">
                   <CardHeader>
-                    <CardTitle>Transfers This Season</CardTitle>
+                    <CardTitle>Season {currentPlayer.season} Results</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold mb-2">League</h4>
+                      <p>
+                        Final position: {seasonResults.league.position}/
+                        {seasonResults.league.total}
+                      </p>
+                    </div>
+                    <Separator />
+                    <div>
+                      <h4 className="font-semibold mb-2">National Cup</h4>
+                      <p>Best round: {seasonResults.cup.phase}</p>
+                      <div className="text-sm text-gray-600 mt-1">
+                        {seasonResults.cup.details.map((detail, i) => (
+                          <div key={i}>{detail}</div>
+                        ))}
+                      </div>
+                    </div>
+                    {seasonResults.european && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="font-semibold mb-2">
+                            European Competition
+                          </h4>
+                          <p>Best round: {seasonResults.european.phase}</p>
+                          <p>
+                            Prize money:{" "}
+                            {formatCurrency(seasonResults.european.prize)}
+                          </p>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {seasonResults.european.details.map((detail, i) => (
+                              <div key={i}>{detail}</div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+                    <Separator />
+                    <div>
+                      <h4 className="font-semibold mb-2">
+                        Personal Statistics
+                      </h4>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>Goals: {seasonResults.stats.goals}</div>
+                        <div>Assists: {seasonResults.stats.assists}</div>
+                        {seasonResults.stats.cleanSheets && (
+                          <div>
+                            Clean Sheets: {seasonResults.stats.cleanSheets}
+                          </div>
+                        )}
+                        <div>Performance: {seasonResults.evolution}/10</div>
+                      </div>
+                    </div>
+                    {seasonResults.trophies.length > 0 && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="font-semibold mb-2">Trophies Won</h4>
+                          <div>{seasonResults.trophies.join(", ")}</div>
+                        </div>
+                      </>
+                    )}
+                  </CardContent>
+                </Card>
+
+                {seasonResults.transfers &&
+                  seasonResults.transfers.length > 0 && (
+                    <Card className="text-gray-900">
+                      <CardHeader>
+                        <CardTitle>Transfers This Season</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="space-y-2 text-sm">
+                          {seasonResults.transfers.map((t, i) => (
+                            <div key={i} className="flex justify-between">
+                              <span>{t.player}</span>
+                              <span className="font-medium">
+                                {t.from} → {t.to}
+                              </span>
+                              <span>{formatCurrency(t.fee)}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                <Card className="text-gray-900">
+                  <CardHeader>
+                    <CardTitle>League Standings (Top 10)</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2 text-sm">
-                      {seasonResults.transfers.map((t, i) => (
-                        <div key={i} className="flex justify-between">
-                          <span>{t.player}</span>
-                          <span className="font-medium">{t.from} → {t.to}</span>
-                          <span>{formatCurrency(t.fee)}</span>
+                    {seasonResults.standings && (
+                      <div className="space-y-4">
+                        <div className="max-w-xs">
+                          <Select
+                            value={standingsKey ?? undefined}
+                            onValueChange={(v) => setStandingsKey(v)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Select league" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {Object.keys(seasonResults.standings).map((k) => (
+                                <SelectItem key={k} value={k}>
+                                  {k}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
-                      ))}
+                        {standingsKey &&
+                          seasonResults.standings[standingsKey] && (
+                            <div className="text-sm">
+                              <div className="font-semibold mb-2">
+                                {standingsKey}
+                              </div>
+                              {seasonResults.standings[standingsKey].map(
+                                (name, i) => (
+                                  <div key={i}>
+                                    {i + 1}. {name}
+                                  </div>
+                                ),
+                              )}
+                            </div>
+                          )}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card className="text-gray-900">
+                  <CardHeader>
+                    <CardTitle>European Winners</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
+                      {seasonResults.globalWinners &&
+                        Object.entries(seasonResults.globalWinners).map(
+                          ([comp, winner]) => (
+                            <div key={comp} className="flex justify-between">
+                              <span>{comp}</span>
+                              <span className="font-semibold">{winner}</span>
+                            </div>
+                          ),
+                        )}
                     </div>
                   </CardContent>
                 </Card>
-              )}
 
-              <Card className="text-gray-900">
-                <CardHeader>
-                  <CardTitle>League Standings (Top 10)</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {seasonResults.standings && (
-                    <div className="space-y-4">
-                      <div className="max-w-xs">
-                        <Select value={standingsKey ?? undefined} onValueChange={(v) => setStandingsKey(v)}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select league" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {Object.keys(seasonResults.standings).map((k) => (
-                              <SelectItem key={k} value={k}>{k}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      {standingsKey && seasonResults.standings[standingsKey] && (
-                        <div className="text-sm">
-                          <div className="font-semibold mb-2">{standingsKey}</div>
-                          {seasonResults.standings[standingsKey].map((name, i) => (
-                            <div key={i}>{i + 1}. {name}</div>
+                <Card className="text-gray-900">
+                  <CardHeader>
+                    <CardTitle>Top XI</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
+                      <div>
+                        <div className="font-semibold mb-2">League Top XI</div>
+                        <div className="space-y-1">
+                          {seasonResults.topXILeague?.map((p, i) => (
+                            <div key={i} className="flex justify-between">
+                              <span>{p.position}</span>
+                              <span className="font-medium">{p.player}</span>
+                              <span className="text-gray-600">{p.club}</span>
+                            </div>
                           ))}
                         </div>
-                      )}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-
-              <Card className="text-gray-900">
-                <CardHeader>
-                  <CardTitle>European Winners</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-                    {seasonResults.globalWinners && Object.entries(seasonResults.globalWinners).map(([comp, winner]) => (
-                      <div key={comp} className="flex justify-between"><span>{comp}</span><span className="font-semibold">{winner}</span></div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="text-gray-900">
-                <CardHeader>
-                  <CardTitle>Top XI</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-sm">
-                    <div>
-                      <div className="font-semibold mb-2">League Top XI</div>
-                      <div className="space-y-1">
-                        {seasonResults.topXILeague?.map((p, i) => (
-                          <div key={i} className="flex justify-between">
-                            <span>{p.position}</span>
-                            <span className="font-medium">{p.player}</span>
-                            <span className="text-gray-600">{p.club}</span>
-                          </div>
-                        ))}
+                      </div>
+                      <div>
+                        <div className="font-semibold mb-2">Global Top XI</div>
+                        <div className="space-y-1">
+                          {seasonResults.topXIGlobal?.map((p, i) => (
+                            <div key={i} className="flex justify-between">
+                              <span>{p.position}</span>
+                              <span className="font-medium">{p.player}</span>
+                              <span className="text-gray-600">
+                                {p.club} ({p.country})
+                              </span>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                    <div>
-                      <div className="font-semibold mb-2">Global Top XI</div>
-                      <div className="space-y-1">
-                        {seasonResults.topXIGlobal?.map((p, i) => (
-                          <div key={i} className="flex justify-between">
-                            <span>{p.position}</span>
-                            <span className="font-medium">{p.player}</span>
-                            <span className="text-gray-600">{p.club} ({p.country})</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
+                  </CardContent>
+                </Card>
               </>
             ) : (
               <Card className="text-gray-900">
                 <CardContent className="text-center py-12">
-                  <p className="text-gray-500">Play a new season to see results.</p>
+                  <p className="text-gray-500">
+                    Play a new season to see results.
+                  </p>
                 </CardContent>
               </Card>
             )}
@@ -1024,24 +1425,42 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   className="w-full bg-green-600 hover:bg-green-700 text-white py-3"
                   size="lg"
                 >
-                  {seasonInProgress ? '⏳ Simulating...' : '▶️ New Season'}
+                  {seasonInProgress ? "⏳ Simulating..." : "▶️ New Season"}
                 </Button>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-center">
-                  <Button variant="outline" onClick={requestExternalTransfer} disabled={seasonInProgress || transferAttemptsLeft<=0}>
+                  <Button
+                    variant="outline"
+                    onClick={requestExternalTransfer}
+                    disabled={seasonInProgress || transferAttemptsLeft <= 0}
+                  >
                     🔄 Request Transfer (Abroad)
                   </Button>
-                  <Button variant="outline" onClick={requestNewContract} disabled={seasonInProgress}>
+                  <Button
+                    variant="outline"
+                    onClick={requestNewContract}
+                    disabled={seasonInProgress}
+                  >
                     📝 Renegotiate Contract
                   </Button>
-                  <Button variant="outline" onClick={requestLoan} disabled={seasonInProgress || transferAttemptsLeft<=0}>
+                  <Button
+                    variant="outline"
+                    onClick={requestLoan}
+                    disabled={seasonInProgress || transferAttemptsLeft <= 0}
+                  >
                     🏃 Request Loan
                   </Button>
                   <div className="flex items-center justify-between">
-                    <Button variant="outline" onClick={requestDomesticTransfer} disabled={seasonInProgress || transferAttemptsLeft<=0}>
+                    <Button
+                      variant="outline"
+                      onClick={requestDomesticTransfer}
+                      disabled={seasonInProgress || transferAttemptsLeft <= 0}
+                    >
                       🏠 Domestic Transfer
                     </Button>
-                    <span className="text-xs text-gray-500">Attempts left: {transferAttemptsLeft}</span>
+                    <span className="text-xs text-gray-500">
+                      Attempts left: {transferAttemptsLeft}
+                    </span>
                   </div>
                 </div>
 
@@ -1049,15 +1468,24 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                   Actions apply instantly and affect next season simulation
                 </p>
                 <div className="text-center">
-                  <Button onClick={() => {
-                    try {
-                      const payload = {
-                        player: currentPlayer,
-                        meta: { clubStrengthDelta, clubBudgetDelta, clubLeagueOverride }
-                      };
-                      localStorage.setItem('careerSaveV1', JSON.stringify(payload));
-                    } catch {}
-                  }}>
+                  <Button
+                    onClick={() => {
+                      try {
+                        const payload = {
+                          player: currentPlayer,
+                          meta: {
+                            clubStrengthDelta,
+                            clubBudgetDelta,
+                            clubLeagueOverride,
+                          },
+                        };
+                        localStorage.setItem(
+                          "careerSaveV1",
+                          JSON.stringify(payload),
+                        );
+                      } catch {}
+                    }}
+                  >
                     💾 Save Career
                   </Button>
                 </div>
@@ -1070,20 +1498,36 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
       <AlertDialog open={offerOpen} onOpenChange={setOfferOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{pendingOffer?.type === 'renewal' ? 'Contract Renewal' : pendingOffer?.type === 'signing' ? 'Signing Offer' : 'Transfer Offer'}</AlertDialogTitle>
+            <AlertDialogTitle>
+              {pendingOffer?.type === "renewal"
+                ? "Contract Renewal"
+                : pendingOffer?.type === "signing"
+                  ? "Signing Offer"
+                  : "Transfer Offer"}
+            </AlertDialogTitle>
             <AlertDialogDescription>
               {pendingOffer ? (
                 <div className="space-y-2">
                   <div>Type: {pendingOffer.type}</div>
-                  <div>Club: <span className="font-semibold">{pendingOffer.club.name}</span> ({pendingOffer.club.country} • {pendingOffer.club.league})</div>
-                  <div>Proposed salary: {formatCurrency(pendingOffer.salary)}/year</div>
+                  <div>
+                    Club:{" "}
+                    <span className="font-semibold">
+                      {pendingOffer.club.name}
+                    </span>{" "}
+                    ({pendingOffer.club.country} • {pendingOffer.club.league})
+                  </div>
+                  <div>
+                    Proposed salary: {formatCurrency(pendingOffer.salary)}/year
+                  </div>
                   <div>Contract: {pendingOffer.contractYears} years</div>
                 </div>
               ) : null}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setPendingOffer(null)}>Refuse</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setPendingOffer(null)}>
+              Refuse
+            </AlertDialogCancel>
             <AlertDialogAction onClick={acceptOffer}>Accept</AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1091,7 +1535,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
       <BallDraw
         balls={currentDraw?.balls || {}}
-        title={currentDraw?.title || ''}
+        title={currentDraw?.title || ""}
         onComplete={handleDrawComplete}
         isVisible={showDraw}
       />
