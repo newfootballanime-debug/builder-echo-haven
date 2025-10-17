@@ -85,21 +85,21 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
       <Card className="w-full max-w-2xl p-4 md:p-8 pb-28 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
         <div className="text-center space-y-4 md:space-y-6">
-          <h2 className="text-2xl md:text-3xl font-bold text-blue-100">{title}</h2>
+          <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
           
           {/* Ball distribution (scrollable on small screens) */}
           <div className="mb-6 md:mb-8">
             <div className="max-h-48 md:max-h-64 overflow-y-auto pr-1">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2 md:gap-4">
                 {Object.entries(balls).map(([value, count]) => (
-                  <div key={value} className="text-center p-2 md:p-3 bg-blue-800/50 rounded-lg border border-blue-600">
-                    <div className="font-bold text-sm md:text-lg text-blue-100">{value}</div>
-                    <div className="text-xs md:text-sm text-blue-300">{count} balls</div>
+                  <div key={value} className="text-center p-2 md:p-3 bg-blue-800/60 rounded-lg border border-blue-500">
+                    <div className="font-bold text-sm md:text-lg text-white">{value}</div>
+                    <div className="text-xs md:text-sm text-white/80">{count} balls</div>
                     <div className="flex justify-center mt-1 md:mt-2 flex-wrap gap-1">
                       {Array.from({ length: Math.min(count, 10) }).map((_, i) => (
                         <div key={i} className="w-2 h-2 md:w-3 md:h-3 bg-blue-400 rounded-full" />
                       ))}
-                      {count > 10 && <span className="text-xs text-blue-300">+{count - 10}</span>}
+                      {count > 10 && <span className="text-xs text-white/80">+{count - 10}</span>}
                     </div>
                   </div>
                 ))}
@@ -204,7 +204,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                 <div className="text-yellow-300 font-bold text-lg md:text-xl animate-pulse">
                   DRAWING IN PROGRESS...
                 </div>
-                <div className="text-blue-200 text-sm md:text-base">
+                <div className="text-white/90 text-sm md:text-base">
                   Ball #{Math.min(drawIndex, 15)}/15
                 </div>
               </div>
