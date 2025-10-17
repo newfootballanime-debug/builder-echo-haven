@@ -146,13 +146,13 @@ export default function Index() {
       <div className="min-h-screen bg-gradient-to-br from-blue-900 via-green-800 to-blue-900 flex flex-col text-white">
         {/* Language Toggle */}
         <div className="absolute top-4 right-4 z-10">
-          <div className="flex bg-white/20 rounded-lg p-1 backdrop-blur-sm border border-white/20">
+          <div className="flex bg-white/20 rounded-lg p-1 backdrop-blur-sm border border-white/30">
             <button
               onClick={() => setLanguage("en")}
               className={`px-3 py-1 rounded text-sm font-medium transition-all ${
                 language === "en"
                   ? "bg-white text-blue-900"
-                  : "text-white hover:bg-white/10"
+                  : "text-white hover:bg-black/60"
               }`}
             >
               EN
@@ -162,7 +162,7 @@ export default function Index() {
               className={`px-3 py-1 rounded text-sm font-medium transition-all ${
                 language === "ro"
                   ? "bg-white text-blue-900"
-                  : "text-white hover:bg-white/10"
+                  : "text-white hover:bg-black/60"
               }`}
             >
               RO
@@ -212,7 +212,7 @@ export default function Index() {
 
             {/* Features Grid - Responsive */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8 md:mb-12">
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
+              <div className="bg-black/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/30">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🎰</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                   {currentText.features.draws}
@@ -221,7 +221,7 @@ export default function Index() {
                   {currentText.features.drawsDesc}
                 </p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
+              <div className="bg-black/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/30">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🏆</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                   {currentText.features.career}
@@ -230,7 +230,7 @@ export default function Index() {
                   {currentText.features.careerDesc}
                 </p>
               </div>
-              <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/20">
+              <div className="bg-black/60 backdrop-blur-sm rounded-xl p-4 md:p-6 border border-white/30">
                 <div className="text-2xl md:text-4xl mb-2 md:mb-4">🌍</div>
                 <h3 className="text-lg md:text-xl font-bold text-white mb-2">
                   {currentText.features.leagues}
@@ -244,7 +244,7 @@ export default function Index() {
             {/* Expandable sections for mobile */}
             <div className="space-y-4 md:space-y-8">
               {/* Game Features - Collapsible on mobile */}
-              <details className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 md:open">
+              <details className="bg-black/60 backdrop-blur-sm rounded-xl border border-white/30 md:open">
                 <summary className="p-4 md:p-8 cursor-pointer md:cursor-default">
                   <h3 className="text-lg md:text-2xl font-bold text-white inline">
                     {currentText.whatCanYouDo}
@@ -284,7 +284,7 @@ export default function Index() {
               </details>
 
               {/* Leagues Showcase - Collapsible on mobile */}
-              <details className="bg-white/10 backdrop-blur-sm rounded-xl border border-white/20 md:open">
+              <details className="bg-black/60 backdrop-blur-sm rounded-xl border border-white/30 md:open">
                 <summary className="p-4 md:p-8 cursor-pointer md:cursor-default">
                   <h3 className="text-lg md:text-2xl font-bold text-white inline">
                     {currentText.availableLeagues}
@@ -384,7 +384,7 @@ export default function Index() {
         <PlayerCreation onPlayerCreated={handlePlayerCreated} />
         <button
           onClick={handleBackToIntro}
-          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 transition-all duration-200 z-10"
+          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/30 transition-all duration-200 z-10"
         >
           ← {language === "en" ? "Back" : "Înapoi"}
         </button>
@@ -402,7 +402,7 @@ export default function Index() {
         />
         <button
           onClick={handleBackToIntro}
-          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 transition-all duration-200 z-10"
+          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/30 transition-all duration-200 z-10"
         >
           ← {language === "en" ? "Main Menu" : "Meniu Principal"}
         </button>
@@ -420,7 +420,7 @@ export default function Index() {
         />
         <button
           onClick={handleBackToIntro}
-          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/20 transition-all duration-200 z-10"
+          className="absolute top-4 left-4 bg-white/20 hover:bg-white/30 text-white px-4 py-2 rounded-lg backdrop-blur-sm border border-white/30 transition-all duration-200 z-10"
         >
           ← {language === "en" ? "Main Menu" : "Meniu Principal"}
         </button>

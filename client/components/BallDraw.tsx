@@ -82,8 +82,8 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
   if (!isVisible) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
-      <Card className="w-full max-w-2xl p-4 md:p-8 pb-28 bg-gradient-to-br from-blue-950 via-blue-900 to-indigo-900 border-blue-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
+    <div className="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-start md:items-center justify-center p-4 overflow-y-auto">
+      <Card className="w-full max-w-2xl p-4 md:p-8 pb-28 bg-slate-950 border border-slate-700 text-white max-h-[calc(100vh-2rem)] md:max-h-[calc(100vh-4rem)] overflow-y-auto rounded-xl" key={title}>
         <div className="text-center space-y-4 md:space-y-6">
           <h2 className="text-2xl md:text-3xl font-bold text-white">{title}</h2>
           
@@ -224,7 +224,7 @@ export default function BallDraw({ balls, title, onComplete, isVisible }: BallDr
                   {finalResult}
                 </div>
                 <div className="sticky bottom-0 left-0 right-0 mt-2 z-50 pointer-events-auto">
-                  <div className="bg-blue-900/60 backdrop-blur-md rounded-xl p-2 border border-white/20" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))' }}>
+                  <div className="bg-black/70 backdrop-blur-md rounded-xl p-2 border border-white/30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom, 0px))' }}>
                     <Button
                       onClick={handleContinue}
                       className="w-full bg-green-600 hover:bg-green-700 text-white font-extrabold py-4 md:py-5 text-lg md:text-xl shadow-2xl rounded-2xl border-2 border-white/40"
