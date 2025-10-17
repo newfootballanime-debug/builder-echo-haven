@@ -291,29 +291,73 @@ export function createPlayer(
   };
 }
 
-// Simulate cup competition
+export function getCountryClubsAllLeagues(country: string, maxLeagues: number = 3): Club[] {
+  const leagues = LEAGUES[country] || [];
+  const clubs: Club[] = [];
+  leagues.slice(0, maxLeagues).forEach(l => {
+    clubs.push(...getLeagueClubs(country, l.name));
+  });
+  return clubs;
+}
+
+function phaseNameByRound(remaining: number): string {
+  if (remaining >= 128) return '128-imi';
+  if (remaining >= 64) return '64-imi';
+  if (remaining >= 32) return '32-imi';
+  if (remaining >= 16) return '16-imi';
+  if (remaining >= 8) return 'Optimi';
+  if (remaining >= 4) return 'Sferturi';
+  if (remaining >= 2) return 'Semifinale';
+  if (remaining === 1) return 'Finală';
+  return 'Câștigător';
+}
+
+// Simulate cup competition with all clubs from first 3 leagues participating
 export function simulateCup(club: Club, country: string): { phase: string, details: string[] } {
-  const phases = ["16-imi", "Optimi", "Sferturi", "Semifinale", "Finală", "Câștigător"];
+  const participants = getCountryClubsAllLeagues(country, 3);
   const details: string[] = [];
-  let currentPhase = 0;
-  
-  for (let i = 0; i < phases.length; i++) {
-    const phase = phases[i];
-    const successProbability = Math.max(1, 8 - i * 2 + (club.strength - 70) / 10);
-    const totalProbability = 12;
-    
-    if (Math.random() * totalProbability < successProbability) {
-      const score = `${randomInt(0, 4)}-${randomInt(0, 4)}`;
-      details.push(`${phase}: Victorie (${score})`);
-      currentPhase = i;
-    } else {
-      const score = `${randomInt(0, 4)}-${randomInt(0, 4)}`;
-      details.push(`${phase}: Eliminat (${score})`);
-      break;
+  if (participants.length <= 1) return { phase: 'Câștigător', details };
+
+  // Round size = next lower power of two or nearest appropriate bracket
+  let size = 1;
+  while (size * 2 <= participants.length) size *= 2; // largest power of two <= n
+  if (size < 16) size = Math.min(16, participants.length);
+
+  // Seed by strength
+  const seeds = participants.slice().sort((a,b)=> b.strength - a.strength).slice(0, size);
+
+  // Knockout rounds
+  let remaining = seeds;
+  let currentClubAlive = remaining.some(c => c.name === club.name);
+  while (remaining.length > 1) {
+    const roundSize = remaining.length;
+    const roundName = phaseNameByRound(roundSize);
+
+    // Pair teams: 1 vs last, 2 vs last-1, etc.
+    const nextRound: Club[] = [];
+    for (let i = 0; i < Math.floor(remaining.length / 2); i++) {
+      const a = remaining[i];
+      const b = remaining[remaining.length - 1 - i];
+      const aWeight = Math.max(1, a.strength - 40);
+      const bWeight = Math.max(1, b.strength - 40);
+      const total = aWeight + bWeight;
+      const aWins = Math.random() * total < aWeight;
+      const score = `${randomInt(0,4)}-${randomInt(0,4)}`;
+
+      const winner = aWins ? a : b;
+      const loser = aWins ? b : a;
+      nextRound.push(winner);
+
+      if (a.name === club.name || b.name === club.name) {
+        details.push(`${roundName}: ${aWins && a.name===club.name || (!aWins && b.name===club.name) ? 'Victorie' : 'Eliminat'} vs ${loser.name} (${score})`);
+        currentClubAlive = aWins ? a.name===club.name : b.name===club.name;
+      }
     }
+    remaining = nextRound;
   }
-  
-  return { phase: phases[currentPhase], details };
+
+  const finalPhase = currentClubAlive ? 'Câștigător' : details.length ? details[details.length-1].split(':')[0] : 'Eliminat';
+  return { phase: finalPhase, details };
 }
 
 // Simulate European competition
