@@ -537,6 +537,97 @@ function genStrengthBudget(country: string, league: string, name: string, i: num
   }
 })();
 
+// Ensure at least three functional leagues per country and generate third tiers dynamically (2025-26 baseline)
+(function ensureThreeLeaguesAndGenerateThirdTier() {
+  const THIRD_LEAGUE_NAMES: Record<string, string> = {
+    England: 'League One',
+    Spain: 'Primera Federación',
+    Italy: 'Serie C',
+    Germany: '3. Liga',
+    France: 'Championnat National',
+    Portugal: 'Liga 3',
+    Netherlands: 'Tweede Divisie',
+    Belgium: 'National Division 1',
+    Turkey: 'TFF 2. Lig',
+    Greece: 'Gamma Ethniki',
+    Switzerland: 'Promotion League',
+    Austria: 'Regionalliga',
+    Scotland: 'Scottish League One',
+    Romania: 'Liga 3',
+    Poland: 'II Liga',
+    'Czech Republic': 'Czech National Football League 2',
+    Croatia: 'Second NL',
+    Serbia: 'Serbian League',
+    Norway: '1. Division',
+    Sweden: 'Ettan',
+    Denmark: '2nd Division',
+    Ukraine: 'Persha Liha B',
+    Russia: 'FNL 2',
+    Brazil: 'Série C',
+    Argentina: 'Primera Nacional B'
+  };
+
+  function getThirdLeagueName(country: string): string {
+    return THIRD_LEAGUE_NAMES[country] || 'League 3';
+  }
+
+  function makeBName(name: string): string {
+    if (/\bB$/.test(name) || /\bII$/.test(name)) return name;
+    if (name.length > 20) return `${name} B`;
+    return `${name} B`;
+  }
+
+  for (const country of Object.keys(LEAGUES)) {
+    const leagues = LEAGUES[country] || [];
+    if (leagues.length >= 3) continue;
+
+    const desired = 3 - leagues.length;
+    const existingClubs = (CLUBS[country] || []).slice().sort((a,b)=> b.strength - a.strength);
+    const existingNames = new Set((CLUBS[country] || []).map(c => c.club));
+
+    // Build third-tier club candidates from B teams of strongest clubs
+    const thirdLeagueClubs: { club: string; strength: number; league: string; budget: number }[] = [];
+    const thirdName = getThirdLeagueName(country);
+
+    const targetSize = Math.max(16, Math.min(20, Math.ceil((LEAGUES[country]?.[0]?.size || 18) * 0.9)));
+
+    for (const c of existingClubs) {
+      if (thirdLeagueClubs.length >= targetSize) break;
+      const bName = makeBName(c.club);
+      if (existingNames.has(bName)) continue;
+      const strength = Math.max(55, Math.min(80, Math.round(c.strength - 10 - Math.random()*6)));
+      const budget = Math.max(1_500_000, Math.round((c.budget || 10_000_000) * (0.18 + Math.random()*0.12)));
+      thirdLeagueClubs.push({ club: bName, strength, league: thirdName, budget });
+      existingNames.add(bName);
+    }
+
+    // If still not enough, duplicate some lower clubs as II teams
+    let idx = existingClubs.length - 1;
+    while (thirdLeagueClubs.length < targetSize && idx >= 0) {
+      const base = existingClubs[idx--];
+      const iiName = /\bII$/.test(base.club) ? base.club : `${base.club} II`;
+      if (existingNames.has(iiName)) continue;
+      const strength = Math.max(52, Math.min(76, Math.round(base.strength - 12 - Math.random()*6)));
+      const budget = Math.max(1_000_000, Math.round((base.budget || 8_000_000) * (0.15 + Math.random()*0.1)));
+      thirdLeagueClubs.push({ club: iiName, strength, league: thirdName, budget });
+      existingNames.add(iiName);
+    }
+
+    // Guardrail minimal functionality
+    if (thirdLeagueClubs.length >= 12) {
+      LEAGUES[country].push({ name: thirdName, size: thirdLeagueClubs.length, budget: Math.max(5_000_000, Math.round(thirdLeagueClubs.reduce((s,c)=> s + c.budget,0)/thirdLeagueClubs.length)) });
+      CLUBS[country] = (CLUBS[country] || []).concat(thirdLeagueClubs);
+    }
+
+    // If still fewer than 3 leagues (some countries had only 1), create a second tier quickly as well
+    if (LEAGUES[country].length < 3) {
+      const name = LEAGUES[country].length === 1 ? (LEAGUES[country][0].name === 'Liga 1' ? 'Liga 2' : `${LEAGUES[country][0].name} 2`) : getThirdLeagueName(country);
+      const fallbackSize = 16;
+      if (!LEAGUES[country].some(l => l.name === name)) LEAGUES[country].push({ name, size: fallbackSize, budget: 10_000_000 });
+    }
+  }
+})();
+
 // European competitions
 export const EUROPEAN_COMP = [
   {'name': "Champions League", 'prestige': 99},
