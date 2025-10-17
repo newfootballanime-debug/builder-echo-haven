@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import PlayerCreation from '@/components/PlayerCreation';
 import CareerManager from '@/components/CareerManager';
 import RetirementSummary from '@/components/RetirementSummary';
@@ -10,6 +10,8 @@ export default function Index() {
   const [gamePhase, setGamePhase] = useState<GamePhase>('intro');
   const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
   const [language, setLanguage] = useState<'en' | 'ro'>('en');
+  const [savedPlayerData, setSavedPlayerData] = useState<Player | null>(null);
+  const [canContinue, setCanContinue] = useState(false);
 
   const handleStartGame = () => {
     setGamePhase('creation');
@@ -42,6 +44,31 @@ export default function Index() {
   const handleBackToIntro = () => {
     setCurrentPlayer(null);
     setGamePhase('intro');
+  };
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem('careerSaveV1');
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && parsed.player) {
+        setSavedPlayerData(parsed.player as Player);
+        setCanContinue(true);
+      } else {
+        setSavedPlayerData(null);
+        setCanContinue(false);
+      }
+    } catch {
+      setSavedPlayerData(null);
+      setCanContinue(false);
+    }
+  }, []);
+
+  const handleContinueCareer = () => {
+    if (savedPlayerData) {
+      setCurrentPlayer(savedPlayerData);
+      setGamePhase('career');
+    }
   };
 
   const text = {
@@ -150,7 +177,7 @@ export default function Index() {
             </div>
 
             {/* Main CTA Button - Prominent and accessible */}
-            <div className="mb-8 md:mb-12">
+            <div className="mb-8 md:mb-12 space-y-3">
               <button
                 onClick={handleStartGame}
                 className="group relative px-6 md:px-12 py-3 md:py-4 bg-gradient-to-r from-green-500 to-blue-600 hover:from-green-600 hover:to-blue-700 text-white text-lg md:text-xl font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-3xl"
@@ -158,6 +185,14 @@ export default function Index() {
                 <span className="relative z-10">{currentText.startButton}</span>
                 <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-xl opacity-0 group-hover:opacity-20 transition-opacity duration-300" />
               </button>
+              {canContinue && (
+                <button
+                  onClick={handleContinueCareer}
+                  className="group relative px-6 md:px-12 py-3 md:py-4 bg-white/90 hover:bg-white text-blue-900 text-lg md:text-xl font-bold rounded-xl transition-all duration-300 transform hover:scale-105 shadow-xl"
+                >
+                  <span className="relative z-10">🔁 {language === 'en' ? 'Continue Career' : 'Continuă Cariera'}</span>
+                </button>
+              )}
               <p className="text-blue-200 text-sm md:text-lg mt-4">
                 {currentText.readyQuestion}
               </p>
