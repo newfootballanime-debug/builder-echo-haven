@@ -720,7 +720,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
   if (currentPlayer.age >= currentPlayer.retireAt) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-800 to-gray-900 flex items-center justify-center p-4">
-        <Card className="w-full max-w-2xl bg-white">
+        <Card className="w-full max-w-2xl bg-white text-gray-900">
           <CardHeader className="text-center">
             <CardTitle className="text-3xl font-bold text-gray-800">
               🏆 Career Ended
@@ -743,7 +743,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 p-4">
       <div className="max-w-6xl mx-auto space-y-6">
         {/* Player Header */}
-        <Card className="bg-white/95 backdrop-blur-sm">
+        <Card className="bg-white/95 backdrop-blur-sm text-gray-900">
           <CardHeader>
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
               <div>
@@ -785,7 +785,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           </TabsList>
 
           <TabsContent value="career" className="space-y-4">
-            <Card>
+            <Card className="text-gray-900">
               <CardHeader>
                 <CardTitle>Career History</CardTitle>
               </CardHeader>
@@ -824,7 +824,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           </TabsContent>
 
           <TabsContent value="attributes" className="space-y-4">
-            <Card>
+            <Card className="text-gray-900">
               <CardHeader>
                 <CardTitle>Player Attributes</CardTitle>
               </CardHeader>
@@ -846,7 +846,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           <TabsContent value="season" className="space-y-4">
             {seasonResults ? (
               <>
-              <Card>
+              <Card className="text-gray-900">
                 <CardHeader>
                   <CardTitle>Season {currentPlayer.season} Results</CardTitle>
                 </CardHeader>
@@ -905,7 +905,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
               </Card>
 
               {seasonResults.transfers && seasonResults.transfers.length > 0 && (
-                <Card>
+                <Card className="text-gray-900">
                   <CardHeader>
                     <CardTitle>Transfers This Season</CardTitle>
                   </CardHeader>
@@ -923,7 +923,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 </Card>
               )}
 
-              <Card>
+              <Card className="text-gray-900">
                 <CardHeader>
                   <CardTitle>League Standings (Top 10)</CardTitle>
                 </CardHeader>
@@ -955,7 +955,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="text-gray-900">
                 <CardHeader>
                   <CardTitle>European Winners</CardTitle>
                 </CardHeader>
@@ -968,7 +968,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card className="text-gray-900">
                 <CardHeader>
                   <CardTitle>Top XI</CardTitle>
                 </CardHeader>
@@ -1004,7 +1004,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
 
               </>
             ) : (
-              <Card>
+              <Card className="text-gray-900">
                 <CardContent className="text-center py-12">
                   <p className="text-gray-500">Play a new season to see results.</p>
                 </CardContent>
@@ -1013,7 +1013,7 @@ export default function CareerManager({ player, onPlayerUpdate, onRetirement }: 
           </TabsContent>
 
           <TabsContent value="actions" className="space-y-4">
-            <Card>
+            <Card className="text-gray-900">
               <CardHeader>
                 <CardTitle>Available Actions</CardTitle>
               </CardHeader>
