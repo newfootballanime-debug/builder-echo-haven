@@ -259,7 +259,7 @@ export default function Index() {
                         .map((feature, index) => (
                           <div
                             key={index}
-                            className="flex items-start gap-3 text-blue-100 text-sm md:text-base"
+                            className="flex items-start gap-3 text-white/90 text-sm md:text-base"
                           >
                             <span className="text-yellow-400 mt-1">⚽</span>
                             <span>{feature}</span>
@@ -272,7 +272,7 @@ export default function Index() {
                         .map((feature, index) => (
                           <div
                             key={index}
-                            className="flex items-start gap-3 text-blue-100 text-sm md:text-base"
+                            className="flex items-start gap-3 text-white/90 text-sm md:text-base"
                           >
                             <span className="text-yellow-400 mt-1">⚽</span>
                             <span>{feature}</span>
@@ -293,7 +293,7 @@ export default function Index() {
                 </summary>
                 <div className="px-4 pb-4 md:p-8 md:pt-0">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 text-center">
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🏴󠁧󠁢󠁥󠁮󠁧󠁿</div>
                       <div className="font-semibold text-sm md:text-base">
                         Premier League
@@ -302,7 +302,7 @@ export default function Index() {
                         Man City, Liverpool, Arsenal...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇪🇸</div>
                       <div className="font-semibold text-sm md:text-base">
                         La Liga
@@ -311,7 +311,7 @@ export default function Index() {
                         Real Madrid, Barcelona...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇮🇹</div>
                       <div className="font-semibold text-sm md:text-base">
                         Serie A
@@ -320,7 +320,7 @@ export default function Index() {
                         Juventus, Inter, Milan...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇩🇪</div>
                       <div className="font-semibold text-sm md:text-base">
                         Bundesliga
@@ -329,7 +329,7 @@ export default function Index() {
                         Bayern, Dortmund...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇫🇷</div>
                       <div className="font-semibold text-sm md:text-base">
                         Ligue 1
@@ -338,7 +338,7 @@ export default function Index() {
                         PSG, Marseille...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇵🇹</div>
                       <div className="font-semibold text-sm md:text-base">
                         Primeira Liga
@@ -347,14 +347,14 @@ export default function Index() {
                         Porto, Benfica...
                       </div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇳🇱</div>
                       <div className="font-semibold text-sm md:text-base">
                         Eredivisie
                       </div>
                       <div className="text-xs md:text-sm">Ajax, PSV...</div>
                     </div>
-                    <div className="text-blue-100">
+                    <div className="text-white/90">
                       <div className="text-xl md:text-2xl mb-1 md:mb-2">🇷🇴</div>
                       <div className="font-semibold text-sm md:text-base">
                         Liga 1
