@@ -138,7 +138,7 @@ export default function PlayerCreation({ onPlayerCreated }: PlayerCreationProps)
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-emerald-900 flex items-start md:items-center justify-center p-4">
       <div className="w-full max-w-2xl">
-        <Card className="bg-white/95 backdrop-blur-sm">
+        <Card className="bg-white/95 backdrop-blur-sm text-gray-900">
           <CardHeader className="text-center">
             <CardTitle className="text-2xl md:text-3xl font-bold text-green-800">
               ⚽ Create Your Footballer
