@@ -868,6 +868,72 @@ export function registerEuropeanWinners(winners: Record<string, string>) {
   }
 }
 
+export function getQualifiedEuropeanTeams(): { UCL: Club[]; UEL: Club[]; UECL: Club[] } {
+  const UCL: Club[] = [];
+  const UEL: Club[] = [];
+  const UECL: Club[] = [];
+  for (const country of getAllCountries()) {
+    const slots = getEuropeanSlots(country);
+    const topLeague = getLeague(0, country);
+    const clubs = getLeagueClubs(country, topLeague).slice().sort((a,b)=> b.strength - a.strength);
+    UCL.push(...clubs.slice(0, Math.min(slots.ucl, clubs.length)));
+    const restStart = Math.min(slots.ucl, clubs.length);
+    UEL.push(...clubs.slice(restStart, Math.min(restStart + slots.uel, clubs.length)));
+    const rest2Start = Math.min(restStart + slots.uel, clubs.length);
+    UECL.push(...clubs.slice(rest2Start, Math.min(rest2Start + slots.uecl, clubs.length)));
+  }
+  return { UCL, UEL, UECL };
+}
+
+function knockoutSim(participants: Club[], seedByStrength: boolean, subject: Club): { phase: string; details: string[]; prize: number } {
+  const phasesOrder = ["Preliminarii","Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+  const details: string[] = [];
+  if (participants.length <= 1) return { phase: 'Câștigător', details, prize: 0 };
+
+  // Seed by strength strongest vs weakest
+  let remaining = participants.slice().sort((a,b)=> b.strength - a.strength);
+  // Ensure subject is in participants; if not, add it in by replacing weakest
+  if (!remaining.some(c => c.name === subject.name)) {
+    remaining[remaining.length - 1] = subject;
+    remaining.sort((a,b)=> b.strength - a.strength);
+  }
+  let subjectAlive = true;
+  let roundIndex = 0;
+  while (remaining.length > 1) {
+    const next: Club[] = [];
+    for (let i=0;i<Math.floor(remaining.length/2);i++) {
+      const a = remaining[i];
+      const b = remaining[remaining.length-1-i];
+      const aW = Math.max(1, a.strength - 40);
+      const bW = Math.max(1, b.strength - 40);
+      const total = aW + bW;
+      const aWins = Math.random() * total < aW;
+      const winner = aWins ? a : b;
+      const loser = aWins ? b : a;
+      next.push(winner);
+      if (a.name === subject.name || b.name === subject.name) {
+        const rn = phasesOrder[Math.min(roundIndex+1, phasesOrder.length-2)];
+        const res = winner.name === subject.name ? 'Victorie' : 'Eliminat';
+        const score = `${randomInt(0,3)}-${randomInt(0,3)}`;
+        details.push(`${rn}: ${res} vs ${loser.name} (${score})`);
+        subjectAlive = winner.name === subject.name;
+      }
+    }
+    remaining = next;
+    roundIndex++;
+  }
+  const prizePerRound = [2_000_000, 15_000_000, 9_000_000, 12_000_000, 15_000_000, 20_000_000, 30_000_000];
+  const lastPhase = subjectAlive ? 'Câștigător' : (details[details.length-1]?.split(':')[0] || 'Preliminarii');
+  const prize = prizePerRound[Math.min(phasesOrder.indexOf(lastPhase), prizePerRound.length-1)] || 0;
+  return { phase: lastPhase, details, prize };
+}
+
+export function simulateEuropeanCompetition(subject: Club, competition: 'Champions League'|'Europa League'|'Conference League') {
+  const { UCL, UEL, UECL } = getQualifiedEuropeanTeams();
+  const pool = competition==='Champions League'?UCL: competition==='Europa League'?UEL:UECL;
+  return knockoutSim(pool, true, subject);
+}
+
 export function simulateGlobalWinners(): Record<string, string> {
   const winners: Record<string, string> = {};
   const topClubs: Club[] = [];
@@ -890,6 +956,37 @@ export function simulateGlobalWinners(): Record<string, string> {
   }
   registerEuropeanWinners(winners);
   return winners;
+}
+
+export function simulateNationalTeamSeason(player: Player): { selected: boolean; tournament: { phase: string; details: string[] } } {
+  const country = player.country;
+  // Approximate national strength by average of top 5 clubs
+  const topLeague = getLeague(0, country);
+  const clubs = getLeagueClubs(country, topLeague).slice().sort((a,b)=> b.strength - a.strength);
+  const avg = clubs.slice(0,5).reduce((s,c)=> s + c.strength, 0) / Math.max(1, Math.min(5, clubs.length));
+  // Build a virtual pool of 23 players around avg
+  const pool = Array.from({length: 22}, ()=> Math.round(avg + randomInt(-8, 8))).sort((a,b)=> b - a);
+  // include our player
+  pool.push(player.rating);
+  pool.sort((a,b)=> b - a);
+  const selected = pool.indexOf(player.rating) < 23;
+
+  // Simulate a simple tournament based on national strength vs random opponents of similar tier
+  const phases = ["Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+  const details: string[] = [];
+  let reached = 0;
+  for (let i=0;i<phases.length;i++) {
+    const opp = Math.round(avg + randomInt(-10, 10));
+    const our = Math.round((avg + (selected ? 2 : 0)));
+    const w = Math.max(1, our - 30);
+    const ow = Math.max(1, opp - 30);
+    const total = w + ow;
+    const wins = Math.random()*total < w;
+    const score = `${randomInt(0,3)}-${randomInt(0,3)}`;
+    details.push(`${phases[i]}: ${wins ? 'Victorie' : 'Eliminat'} (${score})`);
+    if (!wins) break; else reached = i;
+  }
+  return { selected, tournament: { phase: phases[reached], details } };
 }
 
 export function generateLeagueTopXI(
