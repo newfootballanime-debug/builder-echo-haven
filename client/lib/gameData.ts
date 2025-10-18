@@ -1617,6 +1617,84 @@ export const EUROPEAN_COMP = [
   { name: "Conference League", prestige: 80 },
 ];
 
+// Apply user-provided club overrides (no duplicates)
+(function applyUserClubOverrides(){
+  const mapCountry = (name: string): string => ({
+    'România':'Romania','Anglia':'England','Spania':'Spain','Italia':'Italy','Germania':'Germany','Franța':'France','Portugalia':'Portugal','Olanda':'Netherlands','Turcia':'Turkey','Grecia':'Greece','Elveția':'Switzerland','Croația':'Croatia'
+  } as Record<string,string>)[name] || name;
+
+  const normalize = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu,'').toLowerCase().replace(/[^a-z0-9]+/g,' ').trim();
+
+  const USER_CLUBS_OVERRIDES: Record<string, { club: string; strength: number; league: string; budget: number }[]> = {
+    Romania: [
+      { club: 'FCSB', strength: 80, league: 'Liga 1', budget: 15_000_000 },
+      { club: 'CFR Cluj', strength: 79, league: 'Liga 1', budget: 14_500_000 },
+      { club: 'Farul Constanța', strength: 79, league: 'Liga 1', budget: 12_500_000 },
+      { club: 'Rapid București', strength: 80, league: 'Liga 1', budget: 15_000_000 },
+      { club: 'Universitatea Craiova', strength: 80, league: 'Liga 1', budget: 11_000_000 },
+      { club: 'Petrolul Ploiești', strength: 72, league: 'Liga 1', budget: 6_500_000 },
+      { club: 'Sepsi OSK', strength: 74, league: 'Liga 1', budget: 7_000_000 },
+      { club: 'FC Voluntari', strength: 70, league: 'Liga 1', budget: 5_500_000 },
+      { club: 'FC Botoșani', strength: 69, league: 'Liga 1', budget: 5_000_000 },
+      { club: 'Universitatea Cluj', strength: 71, league: 'Liga 1', budget: 6_000_000 },
+      { club: 'Hermannstadt', strength: 68, league: 'Liga 1', budget: 4_800_000 },
+      { club: 'UTA Arad', strength: 67, league: 'Liga 1', budget: 4_500_000 },
+      { club: 'Oțelul Galați', strength: 66, league: 'Liga 1', budget: 4_200_000 },
+      { club: 'Poli Iași', strength: 65, league: 'Liga 1', budget: 4_000_000 },
+      { club: 'Gloria Buzău', strength: 64, league: 'Liga 1', budget: 3_800_000 },
+      { club: 'Dinamo București', strength: 73, league: 'Liga 1', budget: 5_200_000 },
+      // Liga 2 (without duplicating CSM Politehnica Iași vs Poli Iași)
+      { club: 'Concordia Chiajna', strength: 60, league: 'Liga 2', budget: 1_280_000 },
+      { club: 'Metaloglobus București', strength: 55, league: 'Liga 2', budget: 1_000_000 },
+      { club: 'Ripensia Timișoara', strength: 58, league: 'Liga 2', budget: 1_350_000 },
+      { club: 'Corvinul Hunedoara', strength: 63, league: 'Liga 2', budget: 1_500_000 },
+      { club: 'Csikszereda', strength: 59, league: 'Liga 2', budget: 1_200_000 },
+      { club: 'Unirea Slobozia', strength: 61, league: 'Liga 2', budget: 1_400_000 },
+      { club: 'Viitorul Pandurii', strength: 57, league: 'Liga 2', budget: 1_100_000 },
+      { club: 'Dumbrăvița', strength: 56, league: 'Liga 2', budget: 900_000 },
+      { club: 'Tunari', strength: 54, league: 'Liga 2', budget: 850_000 },
+      { club: 'Steaua București', strength: 60, league: 'Liga 2', budget: 1_300_000 },
+      { club: 'Chindia Târgoviște', strength: 62, league: 'Liga 2', budget: 1_400_000 },
+      { club: 'Argeș Pitești', strength: 64, league: 'Liga 2', budget: 1_600_000 },
+      { club: 'Mioveni', strength: 61, league: 'Liga 2', budget: 1_200_000 },
+      { club: 'Șelimbăr', strength: 58, league: 'Liga 2', budget: 950_000 },
+      { club: 'Unirea Dej', strength: 55, league: 'Liga 2', budget: 800_000 },
+      { club: 'Reșița', strength: 57, league: 'Liga 2', budget: 900_000 },
+      { club: 'Slatina', strength: 56, league: 'Liga 2', budget: 850_000 },
+      { club: 'Ceahlăul Piatra Neamț', strength: 59, league: 'Liga 2', budget: 1_000_000 },
+      { club: 'Bistrița', strength: 54, league: 'Liga 2', budget: 800_000 },
+    ],
+  };
+
+  for (const [countryRaw, list] of Object.entries(USER_CLUBS_OVERRIDES)) {
+    const country = mapCountry(countryRaw);
+    if (!CLUBS[country]) CLUBS[country] = [];
+    const byNorm = new Map<string, number>();
+    // index existing by normalized name
+    (CLUBS[country] || []).forEach((c, i) => byNorm.set(normalize(c.club), i));
+    for (const entry of list) {
+      const key = normalize(entry.club);
+      if (byNorm.has(key)) {
+        const idx = byNorm.get(key)!;
+        CLUBS[country][idx] = { club: entry.club, strength: entry.strength, league: entry.league, budget: entry.budget };
+      } else {
+        // avoid duplicates by league+name collisions after diacritic changes
+        if (!(CLUBS[country] || []).some(c => normalize(c.club) === key)) {
+          CLUBS[country].push({ club: entry.club, strength: entry.strength, league: entry.league, budget: entry.budget });
+        }
+      }
+    }
+    // Remove accidental duplicates (normalize-based)
+    const seen = new Set<string>();
+    CLUBS[country] = (CLUBS[country] || []).filter(c => {
+      const k = normalize(c.club);
+      if (seen.has(k)) return false;
+      seen.add(k);
+      return true;
+    });
+  }
+})();
+
 // National competitions
 export const NATIONAL_COMP = [
   { name: "World Cup", prestige: 100 },
