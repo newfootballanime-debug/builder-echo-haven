@@ -1113,6 +1113,19 @@ export default function CareerManager({
                   <span className="font-semibold text-green-800">Value:</span>
                   <p>{formatCurrency(currentPlayer.marketValue)}</p>
                 </div>
+                <div>
+                  <span className="font-semibold text-green-800">First XI Strength:</span>
+                  <p>{(() => {
+                    try {
+                      const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
+                      const club = clubs.find(c=>c.name===currentPlayer.club) || clubs[0];
+                      if (!club) return '-';
+                      const starter = isInFirstEleven(currentPlayer, club);
+                      const eff = effectiveStrength(club, currentPlayer, starter, 8);
+                      return `${eff}${starter ? ' (Starter)' : ' (Bench)'}`;
+                    } catch { return '-'; }
+                  })()}</p>
+                </div>
               </div>
             </div>
           </CardHeader>
