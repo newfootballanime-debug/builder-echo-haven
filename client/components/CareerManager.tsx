@@ -1271,6 +1271,23 @@ export default function CareerManager({
                         </div>
                       </>
                     )}
+
+                    {seasonResults.national && (
+                      <>
+                        <Separator />
+                        <div>
+                          <h4 className="font-semibold mb-2">National Team</h4>
+                          <p>Selected: {seasonResults.national.selected ? 'Yes' : 'No'}</p>
+                          <p>Best round: {seasonResults.national.tournament.phase}</p>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {seasonResults.national.tournament.details.map((detail, i) => (
+                              <div key={i}>{detail}</div>
+                            ))}
+                          </div>
+                        </div>
+                      </>
+                    )}
+
                     <Separator />
                     <div>
                       <h4 className="font-semibold mb-2">
