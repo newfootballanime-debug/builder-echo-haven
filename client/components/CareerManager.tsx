@@ -161,6 +161,8 @@ export default function CareerManager({
             setClubBudgetDelta(parsed.meta.clubBudgetDelta);
           if (parsed.meta.clubLeagueOverride)
             setClubLeagueOverride(parsed.meta.clubLeagueOverride);
+          if (parsed.meta.qualifiersSnapshot)
+            setQualifiersSnapshot(parsed.meta.qualifiersSnapshot);
         }
       }
     } catch {}
