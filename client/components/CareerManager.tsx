@@ -1094,7 +1094,7 @@ export default function CareerManager({
                   Rating: {currentPlayer.rating}
                 </p>
               </div>
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 md:gap-4 text-xs md:text-sm">
+              <div className="grid grid-cols-2 lg:grid-cols-5 gap-2 md:gap-4 text-xs md:text-sm">
                 <div>
                   <span className="font-semibold text-green-800">Club:</span>
                   <p className="break-words">
