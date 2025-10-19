@@ -934,6 +934,24 @@ export function simulateEuropeanCompetition(subject: Club, competition: 'Champio
   return knockoutSim(pool, true, subject);
 }
 
+export function simulateEuropeanCompetitionFromNames(subject: Club, participantNames: string[], competition: 'Champions League'|'Europa League'|'Conference League') {
+  const participants: Club[] = [];
+  const countries = getAllCountries();
+  const findClub = (name: string): Club | null => {
+    for (const ct of countries) {
+      const clubs = getLeagueClubs(ct, getLeague(0, ct)).concat(
+        (getLeague(1, ct) ? getLeagueClubs(ct, getLeague(1, ct)) : []),
+      );
+      const found = clubs.find(c => c.name === name);
+      if (found) return found;
+    }
+    return null;
+  };
+  participantNames.forEach(n => { const c = findClub(n); if (c) participants.push(c); });
+  if (participants.length < 2) return { phase: 'Preliminarii', details: [], prize: 0 };
+  return knockoutSim(participants, true, subject);
+}
+
 export function simulateGlobalWinners(): Record<string, string> {
   const winners: Record<string, string> = {};
   const topClubs: Club[] = [];
