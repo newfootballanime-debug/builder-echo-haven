@@ -962,6 +962,7 @@ export default function CareerManager({
       league: { position, total: totalTeams },
       cup: cupResult,
       european: europeanResult || undefined,
+      national,
       evolution,
       stats,
       trophies,
