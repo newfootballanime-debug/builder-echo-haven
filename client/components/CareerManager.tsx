@@ -785,15 +785,17 @@ export default function CareerManager({
       ? { phase: cupPhase, details: [] as string[] }
       : simulateCup(club, currentPlayer.country);
 
-    // European result (from draw if provided)
+    // European result via qualified participants and strength weighting
     let europeanResult = null as null | {
       phase: string;
       details: string[];
       prize: number;
     };
-    if (euroComp && euroPhase) {
-      europeanResult = { phase: euroPhase, details: [], prize: 0 };
+    if (euroComp) {
+      europeanResult = simulateEuropeanCompetition(club, euroComp);
     }
+
+    const national = simulateNationalTeamSeason(currentPlayer);
 
     // Calculate trophies
     const trophies: string[] = [];
