@@ -113,6 +113,7 @@ export default function CareerManager({
   const [clubLeagueOverride, setClubLeagueOverride] = useState<
     Record<string, Record<string, string>>
   >({});
+  const [qualifiersSnapshot, setQualifiersSnapshot] = useState<Record<string, { UCL: string[]; UEL: string[]; UECL: string[] }>>({});
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
