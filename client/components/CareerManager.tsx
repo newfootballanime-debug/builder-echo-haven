@@ -72,6 +72,7 @@ export default function CareerManager({
     league: { position: number; total: number };
     cup: { phase: string; details: string[] };
     european?: { phase: string; details: string[]; prize: number };
+    national?: { selected: boolean; tournament: { phase: string; details: string[] } };
     evolution: number;
     stats: PlayerStats;
     trophies: string[];
