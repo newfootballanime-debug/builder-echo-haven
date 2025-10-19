@@ -125,6 +125,7 @@ export default function CareerManager({
           clubStrengthDelta,
           clubBudgetDelta,
           clubLeagueOverride,
+          qualifiersSnapshot,
         },
       };
       localStorage.setItem("careerSaveV1", JSON.stringify(payload));
