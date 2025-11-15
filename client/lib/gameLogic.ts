@@ -973,17 +973,49 @@ export function simulateEuropeanCompetitionFromNames(subject: Club, participantN
   const countries = getAllCountries();
   const findClub = (name: string): Club | null => {
     for (const ct of countries) {
-      const clubs = getLeagueClubs(ct, getLeague(0, ct)).concat(
-        (getLeague(1, ct) ? getLeagueClubs(ct, getLeague(1, ct)) : []),
+      const topLeague = getLeague(0, ct);
+      const secondLeague = getLeague(1, ct);
+      const clubs = getLeagueClubs(ct, topLeague).concat(
+        secondLeague ? getLeagueClubs(ct, secondLeague) : [],
       );
       const found = clubs.find(c => c.name === name);
       if (found) return found;
     }
     return null;
   };
-  participantNames.forEach(n => { const c = findClub(n); if (c) participants.push(c); });
+  participantNames.forEach(n => {
+    const c = findClub(n);
+    if (c) participants.push(c);
+  });
+
+  // Ensure subject is in participants
+  if (!participants.some(c => c.name === subject.name)) {
+    participants.push(subject);
+  }
+
   if (participants.length < 2) return { phase: 'Preliminarii', details: [], prize: 0 };
   return knockoutSim(participants, true, subject);
+}
+
+// Simulate European competition using previous season's qualified teams
+export function simulateEuropeanCompetitionPreviousSeason(
+  subject: Club,
+  season: number,
+  competition: 'Champions League' | 'Europa League' | 'Conference League',
+) {
+  const previousSeason = season - 1;
+  const prevQualifiers = getPreviousSeasonEuropeanParticipants(previousSeason);
+
+  let qualifiedTeams: string[] = [];
+  if (competition === 'Champions League') {
+    qualifiedTeams = prevQualifiers.UCL;
+  } else if (competition === 'Europa League') {
+    qualifiedTeams = prevQualifiers.UEL;
+  } else {
+    qualifiedTeams = prevQualifiers.UECL;
+  }
+
+  return simulateEuropeanCompetitionFromNames(subject, qualifiedTeams, competition);
 }
 
 export function simulateGlobalWinners(): Record<string, string> {
