@@ -52,6 +52,7 @@ import {
   calculateBallonDorScore,
   setGlobalSeasonResults,
   getPreviousSeasonEuropeanParticipants,
+  playersInGame,
 } from "@/lib/gameLogic";
 
 interface CareerManagerProps {
