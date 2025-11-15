@@ -951,6 +951,18 @@ export default function CareerManager({
 
     // Winners and coefficients update
     const globalWinners: Record<string, string> = simulateGlobalWinners();
+
+    // Determine Ballon d'Or winner from best performance in game
+    const allSeasonStats: Record<string, { goals: number; assists: number; trophies: string[]; rating: number }> = {};
+    playersInGame.forEach((p) => {
+      allSeasonStats[p.name] = {
+        goals: stats.goals || 0,
+        assists: stats.assists || 0,
+        trophies: trophies,
+        rating: p.rating,
+      };
+    });
+
     // Build Top XI with real players from game (including current player if good enough)
     const leagueClubs = getAdjustedClubs(currentPlayer.country, currentPlayer.league);
     const leaguePlayersPool = playersInGame.filter(
