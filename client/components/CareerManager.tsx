@@ -45,6 +45,13 @@ import {
   getLeagueIndex,
   generateRandomName,
   generatePlayerName,
+  calculateSeasonBudgetAdjustment,
+  calculateTransferBudgetImpact,
+  registerPlayerInGame,
+  buildNationalTeamFromPlayers,
+  calculateBallonDorScore,
+  setGlobalSeasonResults,
+  getPreviousSeasonEuropeanParticipants,
 } from "@/lib/gameLogic";
 
 interface CareerManagerProps {
