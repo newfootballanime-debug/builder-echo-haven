@@ -820,14 +820,19 @@ export default function CareerManager({
       ? { phase: cupPhase, details: [] as string[] }
       : simulateCup(club, currentPlayer.country);
 
-    // European result via qualified participants and strength weighting
+    // European result via qualified participants from previous season
     let europeanResult = null as null | {
       phase: string;
       details: string[];
       prize: number;
     };
     if (euroComp) {
-      europeanResult = simulateEuropeanCompetition(club, euroComp);
+      // Use previous season's qualified teams for more realistic European competition
+      europeanResult = simulateEuropeanCompetitionPreviousSeason(
+        club,
+        currentPlayer.season,
+        euroComp,
+      );
     }
 
     // Build real national team from players in game
