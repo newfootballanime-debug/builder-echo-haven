@@ -34,6 +34,7 @@ import {
   calculateMarketValue,
   simulateCup,
   simulateEuropeanCompetition,
+  simulateEuropeanCompetitionPreviousSeason,
   simulateNationalTeamSeason,
   formatCurrency,
   randomInt,
