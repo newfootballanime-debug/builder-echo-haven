@@ -669,7 +669,7 @@ export default function CareerManager({
               "Sferturi",
               "Semifinale",
               "Finală",
-              "Câștigător",
+              "Câștig��tor",
             ];
             const cupBalls: Record<string, number> = {};
             phases.forEach((ph, i) => {
@@ -783,6 +783,9 @@ export default function CareerManager({
       | null,
     euroPhase?: string | null,
   ) => {
+    // Register player in global pool for national team building
+    registerPlayerInGame(currentPlayer);
+
     // Generate stats
     const stats = generateSeasonStats(
       currentPlayer,
@@ -806,7 +809,13 @@ export default function CareerManager({
       europeanResult = simulateEuropeanCompetition(club, euroComp);
     }
 
-    const national = simulateNationalTeamSeason(currentPlayer);
+    // Build real national team from players in game
+    const nationalTeamPlayers = buildNationalTeamFromPlayers(currentPlayer.country);
+    const selectedForNational = nationalTeamPlayers.includes(currentPlayer.name);
+    const national = {
+      selected: selectedForNational,
+      tournament: { phase: "Grupă", details: [] as string[] },
+    };
 
     // Calculate trophies
     const trophies: string[] = [];
