@@ -1294,3 +1294,22 @@ export function awardBallonDor(season: number): string | null {
   if (!seasonResults) return null;
   return seasonResults.ballonDorWinner;
 }
+
+// Calculate Ballon d'Or winner from all players in game
+export function calculateBallonDorWinner(season: number, statsMap: Record<string, { goals: number; assists: number; trophies: string[]; rating: number }> = {}): string {
+  // Use playersInGame and calculate scores based on performance
+  if (playersInGame.length === 0) return "Unknown";
+
+  let topCandidate: { name: string; score: number } | null = null;
+
+  for (const player of playersInGame) {
+    const stats = statsMap[player.name] || { goals: 0, assists: 0, trophies: [], rating: player.rating };
+    const score = calculateBallonDorScore(stats.goals, stats.assists, player.rating, stats.trophies);
+
+    if (!topCandidate || score > topCandidate.score) {
+      topCandidate = { name: player.name, score };
+    }
+  }
+
+  return topCandidate?.name || "Unknown";
+}
