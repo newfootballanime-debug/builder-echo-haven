@@ -1106,3 +1106,153 @@ export function generateGlobalTopXI(): {
   }
   return picks;
 }
+
+// Budget allocation based on league position, European results, and transfers
+export function calculateSeasonBudgetAdjustment(
+  position: number,
+  totalTeams: number,
+  europeanPhase: string | null,
+  europeanCompetition: string | null,
+): number {
+  let budgetAdjustment = 0;
+
+  // Prize money based on league position (top teams earn more)
+  const topFraction = position / totalTeams;
+  if (topFraction <= 0.1) budgetAdjustment += 25_000_000; // 1st place tier
+  else if (topFraction <= 0.2) budgetAdjustment += 18_000_000; // 2nd-3rd place tier
+  else if (topFraction <= 0.3) budgetAdjustment += 12_000_000; // 4th-6th place tier
+  else if (topFraction <= 0.5) budgetAdjustment += 6_000_000; // Mid-table
+  else if (topFraction <= 0.7) budgetAdjustment += 2_000_000; // Lower mid-table
+  else budgetAdjustment += 1_000_000; // Bottom half
+
+  // European competition prize money
+  if (europeanPhase && europeanCompetition) {
+    const phaseToMoney: Record<string, Record<string, number>> = {
+      "Champions League": {
+        "Preliminarii": 2_000_000,
+        "Grupă": 15_000_000,
+        "Optimi": 9_000_000,
+        "Sferturi": 12_000_000,
+        "Semifinale": 15_000_000,
+        "Finală": 20_000_000,
+        "Câștigător": 30_000_000,
+      },
+      "Europa League": {
+        "Preliminarii": 1_000_000,
+        "Grupă": 8_000_000,
+        "Optimi": 5_000_000,
+        "Sferturi": 7_000_000,
+        "Semifinale": 9_000_000,
+        "Finală": 12_000_000,
+        "Câștigător": 18_000_000,
+      },
+      "Conference League": {
+        "Preliminarii": 500_000,
+        "Grupă": 4_000_000,
+        "Optimi": 2_500_000,
+        "Sferturi": 3_500_000,
+        "Semifinale": 4_500_000,
+        "Finală": 6_000_000,
+        "Câștigător": 9_000_000,
+      },
+    };
+    const compMoney = phaseToMoney[europeanCompetition];
+    if (compMoney) {
+      budgetAdjustment += compMoney[europeanPhase] || 0;
+    }
+  }
+
+  return budgetAdjustment;
+}
+
+// Calculate transfer market activity impact on budget
+export function calculateTransferBudgetImpact(
+  transfers: Array<{
+    player: string;
+    from: string;
+    to: string;
+    fee: number;
+    type: "domestic" | "external";
+  }>,
+  clubName: string,
+): number {
+  let impact = 0;
+  transfers.forEach((t) => {
+    if (t.to === clubName) {
+      impact -= t.fee; // Money spent on incoming transfers
+    } else if (t.from === clubName) {
+      impact += t.fee; // Money earned from outgoing transfers
+    }
+  });
+  return impact;
+}
+
+// Build national team from real players in the game
+export interface PlayerInGame {
+  name: string;
+  country: string;
+  rating: number;
+  position: string;
+  club: string;
+}
+
+// Track all players currently in game
+export let playersInGame: PlayerInGame[] = [];
+
+export function registerPlayerInGame(player: Player) {
+  const idx = playersInGame.findIndex((p) => p.name === player.name);
+  if (idx >= 0) {
+    playersInGame[idx] = {
+      name: player.name,
+      country: player.country,
+      rating: player.rating,
+      position: player.position,
+      club: player.club,
+    };
+  } else {
+    playersInGame.push({
+      name: player.name,
+      country: player.country,
+      rating: player.rating,
+      position: player.position,
+      club: player.club,
+    });
+  }
+}
+
+export function buildNationalTeamFromPlayers(country: string): Player["name"][] {
+  const countryPlayers = playersInGame.filter((p) => p.country === country);
+  const sorted = countryPlayers.sort((a, b) => b.rating - a.rating);
+  return sorted.slice(0, 23).map((p) => p.name);
+}
+
+// Ballon d'Or tracking
+export interface BallonDorCandidate {
+  name: string;
+  club: string;
+  country: string;
+  rating: number;
+  goals: number;
+  assists: number;
+  score: number; // Weighted score for ranking
+}
+
+export function calculateBallonDorScore(
+  goals: number,
+  assists: number,
+  rating: number,
+  trophies: string[],
+): number {
+  let score = 0;
+  score += goals * 2; // 2 points per goal
+  score += assists * 1.5; // 1.5 points per assist
+  score += rating * 0.5; // 0.5 points per rating point
+  score += trophies.length * 10; // 10 points per trophy
+  return score;
+}
+
+export function awardBallonDor(season: number): string | null {
+  const seasonResults = getGlobalSeasonResults(season);
+  if (!seasonResults) return null;
+  return seasonResults.ballonDorWinner;
+}
