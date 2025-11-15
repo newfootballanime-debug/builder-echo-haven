@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Player } from "@/lib/types";
-import { formatCurrency, randomInt, createPlayer } from "@/lib/gameLogic";
+import { formatCurrency, randomInt, createPlayer, getGlobalSeasonResults } from "@/lib/gameLogic";
 
 interface RetirementSummaryProps {
   player: Player;
