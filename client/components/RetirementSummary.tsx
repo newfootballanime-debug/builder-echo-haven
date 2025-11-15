@@ -151,6 +151,72 @@ export default function RetirementSummary({
 
             <Separator />
 
+            {/* Ballon d'Or Awards */}
+            {(() => {
+              const ballonDorWinners: { season: number; winner: string }[] = [];
+              const playerSeasons = new Set(player.career.map((c) => c.season));
+              playerSeasons.forEach((season) => {
+                const seasonResults = getGlobalSeasonResults(season);
+                if (seasonResults?.ballonDorWinner) {
+                  ballonDorWinners.push({ season, winner: seasonResults.ballonDorWinner });
+                }
+              });
+
+              if (ballonDorWinners.length > 0) {
+                const playerWins = ballonDorWinners.filter(
+                  (b) => b.winner === player.name,
+                );
+                return (
+                  <>
+                    <div>
+                      <h3 className="text-xl md:text-2xl font-bold text-purple-800 mb-4 text-center">
+                        ⚽ Ballon d'Or History
+                      </h3>
+                      {playerWins.length > 0 && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                          <div className="text-center">
+                            <div className="text-3xl mb-2">🏆</div>
+                            <div className="font-bold text-yellow-900">
+                              {player.name} won {playerWins.length} Ballon d'Or
+                              {playerWins.length > 1 ? "s" : ""}!
+                            </div>
+                            {playerWins.map((win) => (
+                              <div key={win.season} className="text-sm text-yellow-800 mt-1">
+                                Season {win.season}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {ballonDorWinners.length > 0 && (
+                        <div className="bg-gray-50 rounded-lg p-4">
+                          <div className="text-sm font-semibold text-gray-700 mb-3">
+                            Global Ballon d'Or Winners:
+                          </div>
+                          <div className="space-y-2">
+                            {ballonDorWinners.map((b) => (
+                              <div
+                                key={`${b.season}-${b.winner}`}
+                                className={`text-sm p-2 rounded ${
+                                  b.winner === player.name
+                                    ? "bg-yellow-100 text-yellow-900 font-semibold"
+                                    : "text-gray-700"
+                                }`}
+                              >
+                                Season {b.season}: {b.winner}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                    <Separator />
+                  </>
+                );
+              }
+              return null;
+            })()}
+
             {/* Achievements */}
             {achievements.length > 0 && (
               <>
