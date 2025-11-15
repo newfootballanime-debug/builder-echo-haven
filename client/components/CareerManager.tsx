@@ -966,7 +966,7 @@ export default function CareerManager({
     // Build Top XI with real players from game (including current player if good enough)
     const leagueClubs = getAdjustedClubs(currentPlayer.country, currentPlayer.league);
     const leaguePlayersPool = playersInGame.filter(
-      (p) => p.country === currentPlayer.country && getLeagueIndex(currentPlayer.country, currentPlayer.league) === getLeagueIndex(p.country, p.country),
+      (p) => p.country === currentPlayer.country,
     );
     const refClubs = leagueClubs.length
       ? leagueClubs.sort((a, b) => b.strength - a.strength)
@@ -987,16 +987,30 @@ export default function CareerManager({
       "ST",
     ];
 
-    // Include current player if they're good enough for the position
+    // Helper to check if player can fill position
+    const canPlayPosition = (playerPos: string, slotPos: string): boolean => {
+      const pFirst = playerPos.substring(0, 2).toUpperCase();
+      const sFirst = slotPos.substring(0, 2).toUpperCase();
+      return pFirst === sFirst ||
+             (pFirst.includes('W') && sFirst.includes('W')) ||
+             (pFirst.includes('M') && sFirst.includes('M'));
+    };
+
+    // Include current player if they're good enough for the position (considering market value)
     const safeLen = Math.max(1, refClubs.length);
     const topXILeague = order.map((pos, i) => {
       // Check if current player can fill this position
       let playerName = generatePlayerName(refClubs[i % safeLen]?.country);
       let clubName = refClubs[i % safeLen]?.name || "-";
 
-      if (isStarter && currentPlayer.position.substring(0, 2) === pos.substring(0, 2)) {
-        // Current player can play this position and is a starter
-        if (Math.random() < 0.4) {
+      if (
+        isStarter &&
+        canPlayPosition(currentPlayer.position, pos) &&
+        currentPlayer.rating >= 75 && // Minimum rating for first XI
+        currentPlayer.marketValue >= 10_000_000 // Consider market value
+      ) {
+        // Current player can play this position and is a starter with good value
+        if (Math.random() < 0.5) {
           playerName = currentPlayer.name;
           clubName = currentPlayer.club;
         }
