@@ -824,6 +824,40 @@ export const COUNTRY_COEFFICIENTS: Record<string, number> = (() => {
   return base;
 })();
 
+// Track season results for promotion/relegation and budget allocation
+export interface SeasonResults {
+  season: number;
+  leagueStandings: Record<string, { club: string; position: number; points: number }[]>;
+  europeanParticipants: {
+    season: number;
+    UCL: string[];
+    UEL: string[];
+    UECL: string[];
+  };
+  ballonDorWinner: string | null;
+}
+
+// Global season tracker (persisted via localStorage by CareerManager)
+let globalSeasonResults: Record<number, SeasonResults> = {};
+
+export function setGlobalSeasonResults(season: number, results: SeasonResults) {
+  globalSeasonResults[season] = results;
+}
+
+export function getGlobalSeasonResults(season: number): SeasonResults | null {
+  return globalSeasonResults[season] || null;
+}
+
+export function getAllGlobalSeasonResults(): Record<number, SeasonResults> {
+  return globalSeasonResults;
+}
+
+export function getPreviousSeasonEuropeanParticipants(season: number): { UCL: string[]; UEL: string[]; UECL: string[] } {
+  const prev = globalSeasonResults[season - 1];
+  if (prev) return prev.europeanParticipants;
+  return { UCL: [], UEL: [], UECL: [] };
+}
+
 export function getCountryRank(country: string): number {
   const sorted = Object.entries(COUNTRY_COEFFICIENTS)
     .sort((a, b) => b[1] - a[1])
