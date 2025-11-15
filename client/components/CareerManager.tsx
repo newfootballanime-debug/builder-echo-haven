@@ -1013,22 +1013,42 @@ export default function CareerManager({
       };
     });
 
-    // Promotion/Relegation league change for player next season
+    // Promotion/Relegation league change for player and other teams in league
     const leagueIdx = getLeagueIndex(
       currentPlayer.country,
       currentPlayer.league,
     );
     const { promote, relegate } = getPromotionRelegationCounts(totalTeams);
     let nextLeague = currentPlayer.league;
+    let promotedTeams: string[] = [];
+    let relegatedTeams: string[] = [];
+
     if (leagueIdx === 0 && position > totalTeams - relegate) {
       const lower = getLeague(1, currentPlayer.country);
       if (lower) nextLeague = lower;
+      // Add to relegated list
+      const allTeams = getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+        .sort((a, b) => {
+          const aPos = Math.random() * 100;
+          const bPos = Math.random() * 100;
+          return aPos - bPos;
+        })
+        .slice(totalTeams - relegate)
+        .map((c) => c.name);
+      relegatedTeams = allTeams;
     } else if (leagueIdx > 0 && position <= promote) {
-      const upper = getLeague(
-        Math.max(0, leagueIdx - 1),
-        currentPlayer.country,
-      );
+      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
       if (upper) nextLeague = upper;
+      // Add to promoted list
+      const allTeams = getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+        .sort((a, b) => {
+          const aPos = Math.random() * 100;
+          const bPos = Math.random() * 100;
+          return aPos - bPos;
+        })
+        .slice(0, promote)
+        .map((c) => c.name);
+      promotedTeams = allTeams;
     }
 
     const transfers = simulateTransfers(
@@ -1037,6 +1057,38 @@ export default function CareerManager({
       currentPlayer.club,
     );
     applyTransfersToAdjustments(currentPlayer.country, transfers);
+
+    // Track european participants for next season's qualification
+    const nextSeasonEuropean = {
+      season: currentPlayer.season + 1,
+      UCL: position <= getEuropeanSlots(currentPlayer.country).ucl ? [club.name] : [],
+      UEL:
+        position > getEuropeanSlots(currentPlayer.country).ucl &&
+        position <= getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel
+          ? [club.name]
+          : [],
+      UECL:
+        position > getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel &&
+        position <= getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel + getEuropeanSlots(currentPlayer.country).uecl
+          ? [club.name]
+          : [],
+    };
+
+    // Save season results globally
+    setGlobalSeasonResults(currentPlayer.season, {
+      season: currentPlayer.season,
+      leagueStandings: {
+        [currentPlayer.league]: getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+          .sort((a, b) => b.strength - a.strength)
+          .map((c, idx) => ({
+            club: c.name,
+            position: idx + 1,
+            points: 90 - idx * 3,
+          })),
+      },
+      europeanParticipants: nextSeasonEuropean,
+      ballonDorWinner: currentPlayer.name,
+    });
 
     setSeasonResults({
       league: { position, total: totalTeams },
@@ -1067,6 +1119,29 @@ export default function CareerManager({
         },
       }));
     }
+
+    // Apply promotions/relegations to all teams in league
+    promotedTeams.forEach((teamName) => {
+      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
+      setClubLeagueOverride((prev) => ({
+        ...prev,
+        [currentPlayer.country]: {
+          ...(prev[currentPlayer.country] || {}),
+          [teamName]: upper,
+        },
+      }));
+    });
+    relegatedTeams.forEach((teamName) => {
+      const lower = getLeague(leagueIdx + 1, currentPlayer.country);
+      setClubLeagueOverride((prev) => ({
+        ...prev,
+        [currentPlayer.country]: {
+          ...(prev[currentPlayer.country] || {}),
+          [teamName]: lower,
+        },
+      }));
+    });
+
     setSeasonInProgress(false);
   };
 
