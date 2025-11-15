@@ -1019,13 +1019,12 @@ export default function CareerManager({
       return { position: pos, player: playerName, club: clubName };
     });
 
-    // Global Top XI from best clubs and players across countries (including current player)
-    const bestClubs: Club[] = [];
+    // Global Top XI from best clubs and players across countries
     const topCountryPlayers = playersInGame
-      .filter((p) => getLeagueIndex(p.country, p.country) === 0) // Only from top leagues
       .sort((a, b) => b.rating - a.rating)
-      .slice(0, 11);
+      .slice(0, 30); // Get top 30 candidates globally
 
+    const bestClubs: Club[] = [];
     Object.keys(LEAGUES).forEach((ct) => {
       const topL = getLeague(0, ct);
       const cs = getAdjustedClubs(ct, topL);
@@ -1039,21 +1038,28 @@ export default function CareerManager({
       let clubName = bestClubs[i % Math.max(1, bestClubs.length)]?.name || "-";
       let countryName = bestClubs[i % Math.max(1, bestClubs.length)]?.country || "-";
 
-      // Check if current player deserves global spot
-      if (currentPlayer.rating >= 85 && currentPlayer.position.substring(0, 2) === pos.substring(0, 2)) {
-        if (Math.random() < 0.15) {
-          playerName = currentPlayer.name;
-          clubName = currentPlayer.club;
-          countryName = currentPlayer.country;
-        }
+      // Find best player for this position from top global players
+      const positionCandidates = topCountryPlayers
+        .filter((p) => canPlayPosition(p.position, pos))
+        .slice(0, 3);
+
+      if (positionCandidates.length > 0) {
+        const bestForPos = positionCandidates[0];
+        playerName = bestForPos.name;
+        clubName = bestForPos.club;
+        countryName = bestForPos.country;
       }
 
-      // Or pick from top global players
-      if (topCountryPlayers.length > i) {
-        const p = topCountryPlayers[i];
-        playerName = p.name;
-        clubName = p.club;
-        countryName = p.country;
+      // Check if current player deserves global spot (considering market value)
+      if (
+        currentPlayer.rating >= 85 &&
+        currentPlayer.marketValue >= 80_000_000 &&
+        canPlayPosition(currentPlayer.position, pos) &&
+        Math.random() < 0.2
+      ) {
+        playerName = currentPlayer.name;
+        clubName = currentPlayer.club;
+        countryName = currentPlayer.country;
       }
 
       return {
