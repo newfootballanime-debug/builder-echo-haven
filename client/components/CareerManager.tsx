@@ -669,7 +669,7 @@ export default function CareerManager({
               "Sferturi",
               "Semifinale",
               "Finală",
-              "Câștig��tor",
+              "Câștigător",
             ];
             const cupBalls: Record<string, number> = {};
             phases.forEach((ph, i) => {
@@ -828,9 +828,15 @@ export default function CareerManager({
     if (europeanResult?.phase === "Câștigător") {
       trophies.push(`🏆 European Title`);
     }
+    if (selectedForNational) {
+      trophies.push(`🇮🇳 National Team`);
+    }
 
     // Update player attributes and rating
     updatePlayerAttributes(evolution);
+
+    // Calculate Ballon d'Or score for this player
+    const ballonDorScore = calculateBallonDorScore(stats.goals, stats.assists || 0, currentPlayer.rating, trophies);
 
     // Update career history
     const careerEntry: CareerHistory = {
@@ -850,6 +856,23 @@ export default function CareerManager({
       salary: careerEntry.salary,
       marketValue: careerEntry.marketValue,
       career: [...currentPlayer.career, careerEntry],
+    });
+
+    // Calculate budget adjustments based on season performance
+    const budgetAdjustment = calculateSeasonBudgetAdjustment(
+      position,
+      totalTeams,
+      europeanResult?.phase || null,
+      euroComp || null,
+    );
+
+    // Apply budget adjustments to club
+    setClubBudgetDelta((prev) => {
+      const copy = { ...prev };
+      copy[currentPlayer.country] = { ...(copy[currentPlayer.country] || {}) };
+      copy[currentPlayer.country][club.name] =
+        (copy[currentPlayer.country][club.name] || 0) + budgetAdjustment;
+      return copy;
     });
 
     const countries = Object.keys(LEAGUES);
