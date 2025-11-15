@@ -65,3 +65,27 @@ export interface BallDrawConfig {
   onComplete: (result: string) => void;
   isVisible: boolean;
 }
+
+export interface BallonDorData {
+  season: number;
+  winner: string;
+  club: string;
+  country: string;
+  goals: number;
+  assists: number;
+  rating: number;
+  score: number;
+}
+
+export interface LeagueStandingsEntry {
+  season: number;
+  country: string;
+  league: string;
+  standings: Array<{
+    position: number;
+    club: string;
+    points: number;
+    promoted?: boolean;
+    relegated?: boolean;
+  }>;
+}
