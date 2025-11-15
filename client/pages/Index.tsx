@@ -152,7 +152,7 @@ export default function Index() {
               className={`px-3 py-1 rounded text-sm font-medium transition-all ${
                 language === "en"
                   ? "bg-white text-blue-900"
-                  : "text-white hover:bg-black/60"
+                  : "text-white hover:bg-white/30"
               }`}
             >
               EN
@@ -162,7 +162,7 @@ export default function Index() {
               className={`px-3 py-1 rounded text-sm font-medium transition-all ${
                 language === "ro"
                   ? "bg-white text-blue-900"
-                  : "text-white hover:bg-black/60"
+                  : "text-white hover:bg-white/30"
               }`}
             >
               RO
