@@ -925,17 +925,16 @@ export default function CareerManager({
 
     // Winners and coefficients update
     const globalWinners: Record<string, string> = simulateGlobalWinners();
-    // Build Top XI with generated player names (biased by club country)
-    const leagueClubs = getLeagueClubs(
-      currentPlayer.country,
-      currentPlayer.league,
+    // Build Top XI with real players from game (including current player if good enough)
+    const leagueClubs = getAdjustedClubs(currentPlayer.country, currentPlayer.league);
+    const leaguePlayersPool = playersInGame.filter(
+      (p) => p.country === currentPlayer.country && getLeagueIndex(currentPlayer.country, currentPlayer.league) === getLeagueIndex(p.country, p.country),
     );
     const refClubs = leagueClubs.length
       ? leagueClubs.sort((a, b) => b.strength - a.strength)
-      : getLeagueClubs(
-          currentPlayer.country,
-          getLeague(0, currentPlayer.country),
-        ).sort((a, b) => b.strength - a.strength);
+      : getAdjustedClubs(currentPlayer.country, getLeague(0, currentPlayer.country)).sort(
+          (a, b) => b.strength - a.strength,
+        );
     const order = [
       "GK",
       "RB",
@@ -949,30 +948,67 @@ export default function CareerManager({
       "LW",
       "ST",
     ];
+
+    // Include current player if they're good enough for the position
     const safeLen = Math.max(1, refClubs.length);
     const topXILeague = order.map((pos, i) => {
-      const club = refClubs[i % safeLen];
-      const playerName = generatePlayerName(club?.country);
-      return { position: pos, player: playerName, club: club?.name || "-" };
+      // Check if current player can fill this position
+      let playerName = generatePlayerName(refClubs[i % safeLen]?.country);
+      let clubName = refClubs[i % safeLen]?.name || "-";
+
+      if (isStarter && currentPlayer.position.substring(0, 2) === pos.substring(0, 2)) {
+        // Current player can play this position and is a starter
+        if (Math.random() < 0.4) {
+          playerName = currentPlayer.name;
+          clubName = currentPlayer.club;
+        }
+      }
+
+      return { position: pos, player: playerName, club: clubName };
     });
 
-    // Global Top XI from best clubs across countries
+    // Global Top XI from best clubs and players across countries (including current player)
     const bestClubs: Club[] = [];
+    const topCountryPlayers = playersInGame
+      .filter((p) => getLeagueIndex(p.country, p.country) === 0) // Only from top leagues
+      .sort((a, b) => b.rating - a.rating)
+      .slice(0, 11);
+
     Object.keys(LEAGUES).forEach((ct) => {
       const topL = getLeague(0, ct);
-      const cs = getLeagueClubs(ct, topL);
+      const cs = getAdjustedClubs(ct, topL);
       if (cs.length)
         bestClubs.push(cs.reduce((a, b) => (b.strength > a.strength ? b : a)));
     });
     bestClubs.sort((a, b) => b.strength - a.strength);
+
     const topXIGlobal = order.map((pos, i) => {
-      const club = bestClubs[i % Math.max(1, bestClubs.length)];
-      const playerName = generatePlayerName(club?.country);
+      let playerName = generatePlayerName(bestClubs[i % Math.max(1, bestClubs.length)]?.country);
+      let clubName = bestClubs[i % Math.max(1, bestClubs.length)]?.name || "-";
+      let countryName = bestClubs[i % Math.max(1, bestClubs.length)]?.country || "-";
+
+      // Check if current player deserves global spot
+      if (currentPlayer.rating >= 85 && currentPlayer.position.substring(0, 2) === pos.substring(0, 2)) {
+        if (Math.random() < 0.15) {
+          playerName = currentPlayer.name;
+          clubName = currentPlayer.club;
+          countryName = currentPlayer.country;
+        }
+      }
+
+      // Or pick from top global players
+      if (topCountryPlayers.length > i) {
+        const p = topCountryPlayers[i];
+        playerName = p.name;
+        clubName = p.club;
+        countryName = p.country;
+      }
+
       return {
         position: pos,
         player: playerName,
-        club: club?.name || "-",
-        country: club?.country || "-",
+        club: clubName,
+        country: countryName,
       };
     });
 
