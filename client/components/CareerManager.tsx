@@ -1096,20 +1096,29 @@ export default function CareerManager({
     applyTransfersToAdjustments(currentPlayer.country, transfers);
 
     // Track european participants for next season's qualification
+    const slots = getEuropeanSlots(currentPlayer.country);
     const nextSeasonEuropean = {
       season: currentPlayer.season + 1,
-      UCL: position <= getEuropeanSlots(currentPlayer.country).ucl ? [club.name] : [],
+      UCL: position <= slots.ucl ? [club.name] : [],
       UEL:
-        position > getEuropeanSlots(currentPlayer.country).ucl &&
-        position <= getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel
+        position > slots.ucl && position <= slots.ucl + slots.uel
           ? [club.name]
           : [],
       UECL:
-        position > getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel &&
-        position <= getEuropeanSlots(currentPlayer.country).ucl + getEuropeanSlots(currentPlayer.country).uel + getEuropeanSlots(currentPlayer.country).uecl
+        position > slots.ucl + slots.uel &&
+        position <= slots.ucl + slots.uel + slots.uecl
           ? [club.name]
           : [],
     };
+
+    // Determine Ballon d'Or winner from all players in game
+    const ballonDorWinner = playersInGame
+      .map((p) => {
+        const pStats = allSeasonStats[p.name] || { goals: 0, assists: 0, trophies: [], rating: p.rating };
+        const score = calculateBallonDorScore(pStats.goals, pStats.assists, pStats.rating, pStats.trophies);
+        return { name: p.name, score, club: p.club, country: p.country };
+      })
+      .sort((a, b) => b.score - a.score)[0]?.name || null;
 
     // Save season results globally
     setGlobalSeasonResults(currentPlayer.season, {
@@ -1124,7 +1133,7 @@ export default function CareerManager({
           })),
       },
       europeanParticipants: nextSeasonEuropean,
-      ballonDorWinner: currentPlayer.name,
+      ballonDorWinner: ballonDorWinner,
     });
 
     setSeasonResults({
