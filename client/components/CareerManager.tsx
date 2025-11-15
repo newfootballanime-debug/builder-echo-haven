@@ -692,9 +692,28 @@ export default function CareerManager({
                   | "Europa League"
                   | "Conference League"
                   | null = null;
-                if (
+
+                // Get previous season's european qualifiers
+                const prevQualifiers = getPreviousSeasonEuropeanParticipants(currentPlayer.season);
+
+                // Check if this team qualified last season
+                const qualified =
+                  prevQualifiers.UCL.includes(currentPlayer.club) ||
+                  prevQualifiers.UEL.includes(currentPlayer.club) ||
+                  prevQualifiers.UECL.includes(currentPlayer.club);
+
+                if (qualified) {
+                  // Use previous qualification
+                  if (prevQualifiers.UCL.includes(currentPlayer.club))
+                    competition = "Champions League";
+                  else if (prevQualifiers.UEL.includes(currentPlayer.club))
+                    competition = "Europa League";
+                  else if (prevQualifiers.UECL.includes(currentPlayer.club))
+                    competition = "Conference League";
+                } else if (
                   currentPlayer.league === getLeague(0, currentPlayer.country)
                 ) {
+                  // Otherwise qualify based on current season position
                   if (leaguePosition <= slots.ucl)
                     competition = "Champions League";
                   else if (leaguePosition <= slots.ucl + slots.uel)
