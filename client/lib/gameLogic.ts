@@ -1044,32 +1044,38 @@ export function simulateGlobalWinners(): Record<string, string> {
 
 export function simulateNationalTeamSeason(player: Player): { selected: boolean; tournament: { phase: string; details: string[] } } {
   const country = player.country;
-  // Approximate national strength by average of top 5 clubs
-  const topLeague = getLeague(0, country);
-  const clubs = getLeagueClubs(country, topLeague).slice().sort((a,b)=> b.strength - a.strength);
-  const avg = clubs.slice(0,5).reduce((s,c)=> s + c.strength, 0) / Math.max(1, Math.min(5, clubs.length));
-  // Build a virtual pool of 23 players around avg
-  const pool = Array.from({length: 22}, ()=> Math.round(avg + randomInt(-8, 8))).sort((a,b)=> b - a);
-  // include our player
-  pool.push(player.rating);
-  pool.sort((a,b)=> b - a);
-  const selected = pool.indexOf(player.rating) < 23;
 
-  // Simulate a simple tournament based on national strength vs random opponents of similar tier
+  // Get real players from the game for this country
+  const countryPlayers = playersInGame.filter((p) => p.country === country);
+  const topPlayers = countryPlayers.sort((a, b) => b.rating - a.rating).slice(0, 23);
+
+  // Check if our player is selected
+  const selected = topPlayers.some((p) => p.name === player.name);
+
+  // Calculate average strength of national team
+  const avg = topPlayers.length > 0
+    ? Math.round(topPlayers.reduce((s, p) => s + p.rating, 0) / topPlayers.length)
+    : 75;
+
+  // Simulate a simple tournament based on national strength
   const phases = ["Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
   const details: string[] = [];
   let reached = 0;
-  for (let i=0;i<phases.length;i++) {
+
+  for (let i = 0; i < phases.length; i++) {
+    // Random opponent team strength
     const opp = Math.round(avg + randomInt(-10, 10));
-    const our = Math.round((avg + (selected ? 2 : 0)));
+    const our = Math.round(avg + (selected ? 2 : -2));
     const w = Math.max(1, our - 30);
     const ow = Math.max(1, opp - 30);
     const total = w + ow;
-    const wins = Math.random()*total < w;
-    const score = `${randomInt(0,3)}-${randomInt(0,3)}`;
+    const wins = Math.random() * total < w;
+    const score = `${randomInt(0, 3)}-${randomInt(0, 3)}`;
     details.push(`${phases[i]}: ${wins ? 'Victorie' : 'Eliminat'} (${score})`);
-    if (!wins) break; else reached = i;
+    if (!wins) break;
+    else reached = i;
   }
+
   return { selected, tournament: { phase: phases[reached], details } };
 }
 
