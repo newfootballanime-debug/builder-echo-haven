@@ -81,7 +81,10 @@ export default function CareerManager({
     league: { position: number; total: number };
     cup: { phase: string; details: string[] };
     european?: { phase: string; details: string[]; prize: number };
-    national?: { selected: boolean; tournament: { phase: string; details: string[] } };
+    national?: {
+      selected: boolean;
+      tournament: { phase: string; details: string[] };
+    };
     evolution: number;
     stats: PlayerStats;
     trophies: string[];
@@ -122,7 +125,9 @@ export default function CareerManager({
   const [clubLeagueOverride, setClubLeagueOverride] = useState<
     Record<string, Record<string, string>>
   >({});
-  const [qualifiersSnapshot, setQualifiersSnapshot] = useState<Record<string, { UCL: string[]; UEL: string[]; UECL: string[] }>>({});
+  const [qualifiersSnapshot, setQualifiersSnapshot] = useState<
+    Record<string, { UCL: string[]; UEL: string[]; UECL: string[] }>
+  >({});
 
   useEffect(() => {
     onPlayerUpdate(currentPlayer);
@@ -695,7 +700,9 @@ export default function CareerManager({
                   | null = null;
 
                 // Get previous season's european qualifiers
-                const prevQualifiers = getPreviousSeasonEuropeanParticipants(currentPlayer.season);
+                const prevQualifiers = getPreviousSeasonEuropeanParticipants(
+                  currentPlayer.season,
+                );
 
                 // Check if this team qualified last season
                 const qualified =
@@ -836,8 +843,12 @@ export default function CareerManager({
     }
 
     // Build real national team from players in game
-    const nationalTeamPlayers = buildNationalTeamFromPlayers(currentPlayer.country);
-    const selectedForNational = nationalTeamPlayers.includes(currentPlayer.name);
+    const nationalTeamPlayers = buildNationalTeamFromPlayers(
+      currentPlayer.country,
+    );
+    const selectedForNational = nationalTeamPlayers.includes(
+      currentPlayer.name,
+    );
     const national = {
       selected: selectedForNational,
       tournament: { phase: "Grupă", details: [] as string[] },
@@ -862,7 +873,12 @@ export default function CareerManager({
     updatePlayerAttributes(evolution);
 
     // Calculate Ballon d'Or score for this player
-    const ballonDorScore = calculateBallonDorScore(stats.goals, stats.assists || 0, currentPlayer.rating, trophies);
+    const ballonDorScore = calculateBallonDorScore(
+      stats.goals,
+      stats.assists || 0,
+      currentPlayer.rating,
+      trophies,
+    );
 
     // Update career history
     const careerEntry: CareerHistory = {
@@ -953,7 +969,10 @@ export default function CareerManager({
     const globalWinners: Record<string, string> = simulateGlobalWinners();
 
     // Determine Ballon d'Or winner from best performance in game
-    const allSeasonStats: Record<string, { goals: number; assists: number; trophies: string[]; rating: number }> = {};
+    const allSeasonStats: Record<
+      string,
+      { goals: number; assists: number; trophies: string[]; rating: number }
+    > = {};
     playersInGame.forEach((p) => {
       allSeasonStats[p.name] = {
         goals: stats.goals || 0,
@@ -964,15 +983,19 @@ export default function CareerManager({
     });
 
     // Build Top XI with real players from game (including current player if good enough)
-    const leagueClubs = getAdjustedClubs(currentPlayer.country, currentPlayer.league);
+    const leagueClubs = getAdjustedClubs(
+      currentPlayer.country,
+      currentPlayer.league,
+    );
     const leaguePlayersPool = playersInGame.filter(
       (p) => p.country === currentPlayer.country,
     );
     const refClubs = leagueClubs.length
       ? leagueClubs.sort((a, b) => b.strength - a.strength)
-      : getAdjustedClubs(currentPlayer.country, getLeague(0, currentPlayer.country)).sort(
-          (a, b) => b.strength - a.strength,
-        );
+      : getAdjustedClubs(
+          currentPlayer.country,
+          getLeague(0, currentPlayer.country),
+        ).sort((a, b) => b.strength - a.strength);
     const order = [
       "GK",
       "RB",
@@ -991,9 +1014,11 @@ export default function CareerManager({
     const canPlayPosition = (playerPos: string, slotPos: string): boolean => {
       const pFirst = playerPos.substring(0, 2).toUpperCase();
       const sFirst = slotPos.substring(0, 2).toUpperCase();
-      return pFirst === sFirst ||
-             (pFirst.includes('W') && sFirst.includes('W')) ||
-             (pFirst.includes('M') && sFirst.includes('M'));
+      return (
+        pFirst === sFirst ||
+        (pFirst.includes("W") && sFirst.includes("W")) ||
+        (pFirst.includes("M") && sFirst.includes("M"))
+      );
     };
 
     // Include current player if they're good enough for the position (considering market value)
@@ -1034,9 +1059,12 @@ export default function CareerManager({
     bestClubs.sort((a, b) => b.strength - a.strength);
 
     const topXIGlobal = order.map((pos, i) => {
-      let playerName = generatePlayerName(bestClubs[i % Math.max(1, bestClubs.length)]?.country);
+      let playerName = generatePlayerName(
+        bestClubs[i % Math.max(1, bestClubs.length)]?.country,
+      );
       let clubName = bestClubs[i % Math.max(1, bestClubs.length)]?.name || "-";
-      let countryName = bestClubs[i % Math.max(1, bestClubs.length)]?.country || "-";
+      let countryName =
+        bestClubs[i % Math.max(1, bestClubs.length)]?.country || "-";
 
       // Find best player for this position from top global players
       const positionCandidates = topCountryPlayers
@@ -1084,7 +1112,10 @@ export default function CareerManager({
       const lower = getLeague(1, currentPlayer.country);
       if (lower) nextLeague = lower;
       // Add to relegated list
-      const allTeams = getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+      const allTeams = getAdjustedClubs(
+        currentPlayer.country,
+        currentPlayer.league,
+      )
         .sort((a, b) => {
           const aPos = Math.random() * 100;
           const bPos = Math.random() * 100;
@@ -1094,10 +1125,16 @@ export default function CareerManager({
         .map((c) => c.name);
       relegatedTeams = allTeams;
     } else if (leagueIdx > 0 && position <= promote) {
-      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
+      const upper = getLeague(
+        Math.max(0, leagueIdx - 1),
+        currentPlayer.country,
+      );
       if (upper) nextLeague = upper;
       // Add to promoted list
-      const allTeams = getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+      const allTeams = getAdjustedClubs(
+        currentPlayer.country,
+        currentPlayer.league,
+      )
         .sort((a, b) => {
           const aPos = Math.random() * 100;
           const bPos = Math.random() * 100;
@@ -1132,19 +1169,33 @@ export default function CareerManager({
     };
 
     // Determine Ballon d'Or winner from all players in game
-    const ballonDorWinner = playersInGame
-      .map((p) => {
-        const pStats = allSeasonStats[p.name] || { goals: 0, assists: 0, trophies: [], rating: p.rating };
-        const score = calculateBallonDorScore(pStats.goals, pStats.assists, pStats.rating, pStats.trophies);
-        return { name: p.name, score, club: p.club, country: p.country };
-      })
-      .sort((a, b) => b.score - a.score)[0]?.name || null;
+    const ballonDorWinner =
+      playersInGame
+        .map((p) => {
+          const pStats = allSeasonStats[p.name] || {
+            goals: 0,
+            assists: 0,
+            trophies: [],
+            rating: p.rating,
+          };
+          const score = calculateBallonDorScore(
+            pStats.goals,
+            pStats.assists,
+            pStats.rating,
+            pStats.trophies,
+          );
+          return { name: p.name, score, club: p.club, country: p.country };
+        })
+        .sort((a, b) => b.score - a.score)[0]?.name || null;
 
     // Save season results globally
     setGlobalSeasonResults(currentPlayer.season, {
       season: currentPlayer.season,
       leagueStandings: {
-        [currentPlayer.league]: getAdjustedClubs(currentPlayer.country, currentPlayer.league)
+        [currentPlayer.league]: getAdjustedClubs(
+          currentPlayer.country,
+          currentPlayer.league,
+        )
           .sort((a, b) => b.strength - a.strength)
           .map((c, idx) => ({
             club: c.name,
@@ -1188,7 +1239,10 @@ export default function CareerManager({
 
     // Apply promotions/relegations to all teams in league
     promotedTeams.forEach((teamName) => {
-      const upper = getLeague(Math.max(0, leagueIdx - 1), currentPlayer.country);
+      const upper = getLeague(
+        Math.max(0, leagueIdx - 1),
+        currentPlayer.country,
+      );
       setClubLeagueOverride((prev) => ({
         ...prev,
         [currentPlayer.country]: {
@@ -1338,17 +1392,33 @@ export default function CareerManager({
                   <p>{formatCurrency(currentPlayer.marketValue)}</p>
                 </div>
                 <div>
-                  <span className="font-semibold text-green-800">First XI Strength:</span>
-                  <p>{(() => {
-                    try {
-                      const clubs = getLeagueClubs(currentPlayer.country, currentPlayer.league);
-                      const club = clubs.find(c=>c.name===currentPlayer.club) || clubs[0];
-                      if (!club) return '-';
-                      const starter = isInFirstEleven(currentPlayer, club);
-                      const eff = effectiveStrength(club, currentPlayer, starter, 8);
-                      return `${eff}${starter ? ' (Starter)' : ' (Bench)'}`;
-                    } catch { return '-'; }
-                  })()}</p>
+                  <span className="font-semibold text-green-800">
+                    First XI Strength:
+                  </span>
+                  <p>
+                    {(() => {
+                      try {
+                        const clubs = getLeagueClubs(
+                          currentPlayer.country,
+                          currentPlayer.league,
+                        );
+                        const club =
+                          clubs.find((c) => c.name === currentPlayer.club) ||
+                          clubs[0];
+                        if (!club) return "-";
+                        const starter = isInFirstEleven(currentPlayer, club);
+                        const eff = effectiveStrength(
+                          club,
+                          currentPlayer,
+                          starter,
+                          8,
+                        );
+                        return `${eff}${starter ? " (Starter)" : " (Bench)"}`;
+                      } catch {
+                        return "-";
+                      }
+                    })()}
+                  </p>
                 </div>
               </div>
             </div>
@@ -1498,12 +1568,20 @@ export default function CareerManager({
                         <Separator />
                         <div>
                           <h4 className="font-semibold mb-2">National Team</h4>
-                          <p>Selected: {seasonResults.national.selected ? 'Yes' : 'No'}</p>
-                          <p>Best round: {seasonResults.national.tournament.phase}</p>
+                          <p>
+                            Selected:{" "}
+                            {seasonResults.national.selected ? "Yes" : "No"}
+                          </p>
+                          <p>
+                            Best round:{" "}
+                            {seasonResults.national.tournament.phase}
+                          </p>
                           <div className="text-sm text-gray-600 mt-1">
-                            {seasonResults.national.tournament.details.map((detail, i) => (
-                              <div key={i}>{detail}</div>
-                            ))}
+                            {seasonResults.national.tournament.details.map(
+                              (detail, i) => (
+                                <div key={i}>{detail}</div>
+                              ),
+                            )}
                           </div>
                         </div>
                       </>

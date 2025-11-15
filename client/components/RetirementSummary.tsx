@@ -4,7 +4,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Player } from "@/lib/types";
-import { formatCurrency, randomInt, createPlayer, getGlobalSeasonResults } from "@/lib/gameLogic";
+import {
+  formatCurrency,
+  randomInt,
+  createPlayer,
+  getGlobalSeasonResults,
+} from "@/lib/gameLogic";
 
 interface RetirementSummaryProps {
   player: Player;
@@ -158,7 +163,10 @@ export default function RetirementSummary({
               playerSeasons.forEach((season) => {
                 const seasonResults = getGlobalSeasonResults(season);
                 if (seasonResults?.ballonDorWinner) {
-                  ballonDorWinners.push({ season, winner: seasonResults.ballonDorWinner });
+                  ballonDorWinners.push({
+                    season,
+                    winner: seasonResults.ballonDorWinner,
+                  });
                 }
               });
 
@@ -181,7 +189,10 @@ export default function RetirementSummary({
                               {playerWins.length > 1 ? "s" : ""}!
                             </div>
                             {playerWins.map((win) => (
-                              <div key={win.season} className="text-sm text-yellow-800 mt-1">
+                              <div
+                                key={win.season}
+                                className="text-sm text-yellow-800 mt-1"
+                              >
                                 Season {win.season}
                               </div>
                             ))}

@@ -827,7 +827,10 @@ export const COUNTRY_COEFFICIENTS: Record<string, number> = (() => {
 // Track season results for promotion/relegation and budget allocation
 export interface SeasonResults {
   season: number;
-  leagueStandings: Record<string, { club: string; position: number; points: number }[]>;
+  leagueStandings: Record<
+    string,
+    { club: string; position: number; points: number }[]
+  >;
   europeanParticipants: {
     season: number;
     UCL: string[];
@@ -852,7 +855,11 @@ export function getAllGlobalSeasonResults(): Record<number, SeasonResults> {
   return globalSeasonResults;
 }
 
-export function getPreviousSeasonEuropeanParticipants(season: number): { UCL: string[]; UEL: string[]; UECL: string[] } {
+export function getPreviousSeasonEuropeanParticipants(season: number): {
+  UCL: string[];
+  UEL: string[];
+  UECL: string[];
+} {
   const prev = globalSeasonResults[season - 1];
   if (prev) return prev.europeanParticipants;
   return { UCL: [], UEL: [], UECL: [] };
@@ -902,42 +909,68 @@ export function registerEuropeanWinners(winners: Record<string, string>) {
   }
 }
 
-export function getQualifiedEuropeanTeams(): { UCL: Club[]; UEL: Club[]; UECL: Club[] } {
+export function getQualifiedEuropeanTeams(): {
+  UCL: Club[];
+  UEL: Club[];
+  UECL: Club[];
+} {
   const UCL: Club[] = [];
   const UEL: Club[] = [];
   const UECL: Club[] = [];
   for (const country of getAllCountries()) {
     const slots = getEuropeanSlots(country);
     const topLeague = getLeague(0, country);
-    const clubs = getLeagueClubs(country, topLeague).slice().sort((a,b)=> b.strength - a.strength);
+    const clubs = getLeagueClubs(country, topLeague)
+      .slice()
+      .sort((a, b) => b.strength - a.strength);
     UCL.push(...clubs.slice(0, Math.min(slots.ucl, clubs.length)));
     const restStart = Math.min(slots.ucl, clubs.length);
-    UEL.push(...clubs.slice(restStart, Math.min(restStart + slots.uel, clubs.length)));
+    UEL.push(
+      ...clubs.slice(restStart, Math.min(restStart + slots.uel, clubs.length)),
+    );
     const rest2Start = Math.min(restStart + slots.uel, clubs.length);
-    UECL.push(...clubs.slice(rest2Start, Math.min(rest2Start + slots.uecl, clubs.length)));
+    UECL.push(
+      ...clubs.slice(
+        rest2Start,
+        Math.min(rest2Start + slots.uecl, clubs.length),
+      ),
+    );
   }
   return { UCL, UEL, UECL };
 }
 
-function knockoutSim(participants: Club[], seedByStrength: boolean, subject: Club): { phase: string; details: string[]; prize: number } {
-  const phasesOrder = ["Preliminarii","Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+function knockoutSim(
+  participants: Club[],
+  seedByStrength: boolean,
+  subject: Club,
+): { phase: string; details: string[]; prize: number } {
+  const phasesOrder = [
+    "Preliminarii",
+    "Grupă",
+    "Optimi",
+    "Sferturi",
+    "Semifinale",
+    "Finală",
+    "Câștigător",
+  ];
   const details: string[] = [];
-  if (participants.length <= 1) return { phase: 'Câștigător', details, prize: 0 };
+  if (participants.length <= 1)
+    return { phase: "Câștigător", details, prize: 0 };
 
   // Seed by strength strongest vs weakest
-  let remaining = participants.slice().sort((a,b)=> b.strength - a.strength);
+  let remaining = participants.slice().sort((a, b) => b.strength - a.strength);
   // Ensure subject is in participants; if not, add it in by replacing weakest
-  if (!remaining.some(c => c.name === subject.name)) {
+  if (!remaining.some((c) => c.name === subject.name)) {
     remaining[remaining.length - 1] = subject;
-    remaining.sort((a,b)=> b.strength - a.strength);
+    remaining.sort((a, b) => b.strength - a.strength);
   }
   let subjectAlive = true;
   let roundIndex = 0;
   while (remaining.length > 1) {
     const next: Club[] = [];
-    for (let i=0;i<Math.floor(remaining.length/2);i++) {
+    for (let i = 0; i < Math.floor(remaining.length / 2); i++) {
       const a = remaining[i];
-      const b = remaining[remaining.length-1-i];
+      const b = remaining[remaining.length - 1 - i];
       const aW = Math.max(1, a.strength - 40);
       const bW = Math.max(1, b.strength - 40);
       const total = aW + bW;
@@ -946,9 +979,10 @@ function knockoutSim(participants: Club[], seedByStrength: boolean, subject: Clu
       const loser = aWins ? b : a;
       next.push(winner);
       if (a.name === subject.name || b.name === subject.name) {
-        const rn = phasesOrder[Math.min(roundIndex+1, phasesOrder.length-2)];
-        const res = winner.name === subject.name ? 'Victorie' : 'Eliminat';
-        const score = `${randomInt(0,3)}-${randomInt(0,3)}`;
+        const rn =
+          phasesOrder[Math.min(roundIndex + 1, phasesOrder.length - 2)];
+        const res = winner.name === subject.name ? "Victorie" : "Eliminat";
+        const score = `${randomInt(0, 3)}-${randomInt(0, 3)}`;
         details.push(`${rn}: ${res} vs ${loser.name} (${score})`);
         subjectAlive = winner.name === subject.name;
       }
@@ -956,19 +990,39 @@ function knockoutSim(participants: Club[], seedByStrength: boolean, subject: Clu
     remaining = next;
     roundIndex++;
   }
-  const prizePerRound = [2_000_000, 15_000_000, 9_000_000, 12_000_000, 15_000_000, 20_000_000, 30_000_000];
-  const lastPhase = subjectAlive ? 'Câștigător' : (details[details.length-1]?.split(':')[0] || 'Preliminarii');
-  const prize = prizePerRound[Math.min(phasesOrder.indexOf(lastPhase), prizePerRound.length-1)] || 0;
+  const prizePerRound = [
+    2_000_000, 15_000_000, 9_000_000, 12_000_000, 15_000_000, 20_000_000,
+    30_000_000,
+  ];
+  const lastPhase = subjectAlive
+    ? "Câștigător"
+    : details[details.length - 1]?.split(":")[0] || "Preliminarii";
+  const prize =
+    prizePerRound[
+      Math.min(phasesOrder.indexOf(lastPhase), prizePerRound.length - 1)
+    ] || 0;
   return { phase: lastPhase, details, prize };
 }
 
-export function simulateEuropeanCompetition(subject: Club, competition: 'Champions League'|'Europa League'|'Conference League') {
+export function simulateEuropeanCompetition(
+  subject: Club,
+  competition: "Champions League" | "Europa League" | "Conference League",
+) {
   const { UCL, UEL, UECL } = getQualifiedEuropeanTeams();
-  const pool = competition==='Champions League'?UCL: competition==='Europa League'?UEL:UECL;
+  const pool =
+    competition === "Champions League"
+      ? UCL
+      : competition === "Europa League"
+        ? UEL
+        : UECL;
   return knockoutSim(pool, true, subject);
 }
 
-export function simulateEuropeanCompetitionFromNames(subject: Club, participantNames: string[], competition: 'Champions League'|'Europa League'|'Conference League') {
+export function simulateEuropeanCompetitionFromNames(
+  subject: Club,
+  participantNames: string[],
+  competition: "Champions League" | "Europa League" | "Conference League",
+) {
   const participants: Club[] = [];
   const countries = getAllCountries();
   const findClub = (name: string): Club | null => {
@@ -978,22 +1032,23 @@ export function simulateEuropeanCompetitionFromNames(subject: Club, participantN
       const clubs = getLeagueClubs(ct, topLeague).concat(
         secondLeague ? getLeagueClubs(ct, secondLeague) : [],
       );
-      const found = clubs.find(c => c.name === name);
+      const found = clubs.find((c) => c.name === name);
       if (found) return found;
     }
     return null;
   };
-  participantNames.forEach(n => {
+  participantNames.forEach((n) => {
     const c = findClub(n);
     if (c) participants.push(c);
   });
 
   // Ensure subject is in participants
-  if (!participants.some(c => c.name === subject.name)) {
+  if (!participants.some((c) => c.name === subject.name)) {
     participants.push(subject);
   }
 
-  if (participants.length < 2) return { phase: 'Preliminarii', details: [], prize: 0 };
+  if (participants.length < 2)
+    return { phase: "Preliminarii", details: [], prize: 0 };
   return knockoutSim(participants, true, subject);
 }
 
@@ -1001,21 +1056,25 @@ export function simulateEuropeanCompetitionFromNames(subject: Club, participantN
 export function simulateEuropeanCompetitionPreviousSeason(
   subject: Club,
   season: number,
-  competition: 'Champions League' | 'Europa League' | 'Conference League',
+  competition: "Champions League" | "Europa League" | "Conference League",
 ) {
   const previousSeason = season - 1;
   const prevQualifiers = getPreviousSeasonEuropeanParticipants(previousSeason);
 
   let qualifiedTeams: string[] = [];
-  if (competition === 'Champions League') {
+  if (competition === "Champions League") {
     qualifiedTeams = prevQualifiers.UCL;
-  } else if (competition === 'Europa League') {
+  } else if (competition === "Europa League") {
     qualifiedTeams = prevQualifiers.UEL;
   } else {
     qualifiedTeams = prevQualifiers.UECL;
   }
 
-  return simulateEuropeanCompetitionFromNames(subject, qualifiedTeams, competition);
+  return simulateEuropeanCompetitionFromNames(
+    subject,
+    qualifiedTeams,
+    competition,
+  );
 }
 
 export function simulateGlobalWinners(): Record<string, string> {
@@ -1042,23 +1101,38 @@ export function simulateGlobalWinners(): Record<string, string> {
   return winners;
 }
 
-export function simulateNationalTeamSeason(player: Player): { selected: boolean; tournament: { phase: string; details: string[] } } {
+export function simulateNationalTeamSeason(player: Player): {
+  selected: boolean;
+  tournament: { phase: string; details: string[] };
+} {
   const country = player.country;
 
   // Get real players from the game for this country
   const countryPlayers = playersInGame.filter((p) => p.country === country);
-  const topPlayers = countryPlayers.sort((a, b) => b.rating - a.rating).slice(0, 23);
+  const topPlayers = countryPlayers
+    .sort((a, b) => b.rating - a.rating)
+    .slice(0, 23);
 
   // Check if our player is selected
   const selected = topPlayers.some((p) => p.name === player.name);
 
   // Calculate average strength of national team
-  const avg = topPlayers.length > 0
-    ? Math.round(topPlayers.reduce((s, p) => s + p.rating, 0) / topPlayers.length)
-    : 75;
+  const avg =
+    topPlayers.length > 0
+      ? Math.round(
+          topPlayers.reduce((s, p) => s + p.rating, 0) / topPlayers.length,
+        )
+      : 75;
 
   // Simulate a simple tournament based on national strength
-  const phases = ["Grupă","Optimi","Sferturi","Semifinale","Finală","Câștigător"];
+  const phases = [
+    "Grupă",
+    "Optimi",
+    "Sferturi",
+    "Semifinale",
+    "Finală",
+    "Câștigător",
+  ];
   const details: string[] = [];
   let reached = 0;
 
@@ -1071,7 +1145,7 @@ export function simulateNationalTeamSeason(player: Player): { selected: boolean;
     const total = w + ow;
     const wins = Math.random() * total < w;
     const score = `${randomInt(0, 3)}-${randomInt(0, 3)}`;
-    details.push(`${phases[i]}: ${wins ? 'Victorie' : 'Eliminat'} (${score})`);
+    details.push(`${phases[i]}: ${wins ? "Victorie" : "Eliminat"} (${score})`);
     if (!wins) break;
     else reached = i;
   }
@@ -1156,42 +1230,47 @@ export function calculateSeasonBudgetAdjustment(
 
   // Prize money based on league position (top teams earn more)
   const topFraction = position / totalTeams;
-  if (topFraction <= 0.1) budgetAdjustment += 25_000_000; // 1st place tier
-  else if (topFraction <= 0.2) budgetAdjustment += 18_000_000; // 2nd-3rd place tier
-  else if (topFraction <= 0.3) budgetAdjustment += 12_000_000; // 4th-6th place tier
-  else if (topFraction <= 0.5) budgetAdjustment += 6_000_000; // Mid-table
-  else if (topFraction <= 0.7) budgetAdjustment += 2_000_000; // Lower mid-table
+  if (topFraction <= 0.1)
+    budgetAdjustment += 25_000_000; // 1st place tier
+  else if (topFraction <= 0.2)
+    budgetAdjustment += 18_000_000; // 2nd-3rd place tier
+  else if (topFraction <= 0.3)
+    budgetAdjustment += 12_000_000; // 4th-6th place tier
+  else if (topFraction <= 0.5)
+    budgetAdjustment += 6_000_000; // Mid-table
+  else if (topFraction <= 0.7)
+    budgetAdjustment += 2_000_000; // Lower mid-table
   else budgetAdjustment += 1_000_000; // Bottom half
 
   // European competition prize money
   if (europeanPhase && europeanCompetition) {
     const phaseToMoney: Record<string, Record<string, number>> = {
       "Champions League": {
-        "Preliminarii": 2_000_000,
-        "Grupă": 15_000_000,
-        "Optimi": 9_000_000,
-        "Sferturi": 12_000_000,
-        "Semifinale": 15_000_000,
-        "Finală": 20_000_000,
-        "Câștigător": 30_000_000,
+        Preliminarii: 2_000_000,
+        Grupă: 15_000_000,
+        Optimi: 9_000_000,
+        Sferturi: 12_000_000,
+        Semifinale: 15_000_000,
+        Finală: 20_000_000,
+        Câștigător: 30_000_000,
       },
       "Europa League": {
-        "Preliminarii": 1_000_000,
-        "Grupă": 8_000_000,
-        "Optimi": 5_000_000,
-        "Sferturi": 7_000_000,
-        "Semifinale": 9_000_000,
-        "Finală": 12_000_000,
-        "Câștigător": 18_000_000,
+        Preliminarii: 1_000_000,
+        Grupă: 8_000_000,
+        Optimi: 5_000_000,
+        Sferturi: 7_000_000,
+        Semifinale: 9_000_000,
+        Finală: 12_000_000,
+        Câștigător: 18_000_000,
       },
       "Conference League": {
-        "Preliminarii": 500_000,
-        "Grupă": 4_000_000,
-        "Optimi": 2_500_000,
-        "Sferturi": 3_500_000,
-        "Semifinale": 4_500_000,
-        "Finală": 6_000_000,
-        "Câștigător": 9_000_000,
+        Preliminarii: 500_000,
+        Grupă: 4_000_000,
+        Optimi: 2_500_000,
+        Sferturi: 3_500_000,
+        Semifinale: 4_500_000,
+        Finală: 6_000_000,
+        Câștigător: 9_000_000,
       },
     };
     const compMoney = phaseToMoney[europeanCompetition];
@@ -1258,7 +1337,9 @@ export function registerPlayerInGame(player: Player) {
   }
 }
 
-export function buildNationalTeamFromPlayers(country: string): Player["name"][] {
+export function buildNationalTeamFromPlayers(
+  country: string,
+): Player["name"][] {
   const countryPlayers = playersInGame.filter((p) => p.country === country);
   const sorted = countryPlayers.sort((a, b) => b.rating - a.rating);
   return sorted.slice(0, 23).map((p) => p.name);
@@ -1296,15 +1377,31 @@ export function awardBallonDor(season: number): string | null {
 }
 
 // Calculate Ballon d'Or winner from all players in game
-export function calculateBallonDorWinner(season: number, statsMap: Record<string, { goals: number; assists: number; trophies: string[]; rating: number }> = {}): string {
+export function calculateBallonDorWinner(
+  season: number,
+  statsMap: Record<
+    string,
+    { goals: number; assists: number; trophies: string[]; rating: number }
+  > = {},
+): string {
   // Use playersInGame and calculate scores based on performance
   if (playersInGame.length === 0) return "Unknown";
 
   let topCandidate: { name: string; score: number } | null = null;
 
   for (const player of playersInGame) {
-    const stats = statsMap[player.name] || { goals: 0, assists: 0, trophies: [], rating: player.rating };
-    const score = calculateBallonDorScore(stats.goals, stats.assists, player.rating, stats.trophies);
+    const stats = statsMap[player.name] || {
+      goals: 0,
+      assists: 0,
+      trophies: [],
+      rating: player.rating,
+    };
+    const score = calculateBallonDorScore(
+      stats.goals,
+      stats.assists,
+      player.rating,
+      stats.trophies,
+    );
 
     if (!topCandidate || score > topCandidate.score) {
       topCandidate = { name: player.name, score };
